@@ -2,6 +2,8 @@ import { LightningElement, api, track } from 'lwc';
 import fetchBankAccountViewNew from "@salesforce/apex/CreateMatchingRuleController.fetchBankAccountViewNew";
 import fetchExistingReceipts from '@salesforce/apex/CreateReceiptController.fetchExistingReceipts';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import saveReceiptHeaderDetails from '@salesforce/apex/CreateReceiptController.saveReceiptHeaderDetails';
+import { RefreshEvent } from 'lightning/refresh';
 
 const columns = [
     {
@@ -15,7 +17,7 @@ const columns = [
     },
     { label: 'Invoice Date', fieldName: 's2p3__Invoice_Date__c' },
     { label: 'Customer Reference', fieldName: 's2p3__Customer_Reference__c' },
-    { label: 'Currency', fieldName: 's2p3__Currency__c' },
+    { label: 'Currency', fieldName: 'currencyName' },
     { label: 'Gross Amount', fieldName: 's2p3__Gross_Amount__c' }
 ];
 
@@ -35,15 +37,10 @@ export default class CreateReceipt extends LightningElement {
     @track selectedCurrency;
     @track exchangeRate;
 
-    referenceOptions = [
-        { label: 'Rule Name', value: 'Rule Name' },
-        { label: 'Bank Code', value: 'Bank Code' },
-        { label: 'Bank Description', value: 'Bank Description' }
-    ];
-
     columns = columns;
 
     connectedCallback() {
+        this.isLoading = true;
         this.loadBankCurrencyData();
         this.getExistingBankReceipts();
     }
@@ -61,10 +58,10 @@ export default class CreateReceipt extends LightningElement {
     getExistingBankReceipts() {
         fetchExistingReceipts({ bankRecordId: this.recordId })
             .then(result => {
-
                 this.allBankReceiptData = result.map(row => ({
                     ...row,
-                    recordLink: '/' + row.Id
+                    recordLink: '/' + row.Id,
+                    currencyName: row.s2p3__Currency__r ? row.s2p3__Currency__r.Name : ''
                 }));
 
             }).catch(error => {
@@ -74,7 +71,6 @@ export default class CreateReceipt extends LightningElement {
 
     loadBankCurrencyData() {
         fetchBankAccountViewNew({ bankRecordId: this.recordId })
-
             .then(result => {
                 this.isLoading = false;
                 this.bankAccountObj = result.bankAccountObj;
@@ -140,7 +136,27 @@ export default class CreateReceipt extends LightningElement {
         if (!isValid) {
             return;
         }
-        this.openNewRecord = false;
+        this.isLoading = true;
+        saveReceiptHeaderDetails({
+            bankRecordId: this.recordId,
+            accountId: this.accountSelected,
+            invoiceDate: this.selectedInvoiceDate.split('T')[0],
+            customerReference: this.selectedReference,
+            currencyId: this.selectedCurrency,
+            exchangeRate: this.exchangeRate
+        })
+            .then(result => {
+                this.isLoading = false;
+                this.showToast('Success', 'Bank Receipt created successfully.', 'success');
+                this.openNewRecord = false;
+                this.dispatchEvent(new RefreshEvent());
+                this.connectedCallback();
+            })
+            .catch(error => {
+                this.isLoading = false;
+                this.showToast('Error', 'Error creating Bank Receipt: ' + error.body.message, 'error');
+                console.error('Error saving Record:', error);
+            });
     }
 
     validateFields() {

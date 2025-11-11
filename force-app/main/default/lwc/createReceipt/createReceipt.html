@@ -12,7 +12,7 @@
                         <div class="slds-p-top_small">
                             <h2 class="slds-card__header-title">
                                 <div class="slds-p-left_x-small">
-                                    <lightning-icon icon-name="custom:custom19" title="custom19"
+                                    <lightning-icon icon-name="custom:custom56" title="custom56"
                                         size="small"></lightning-icon>
                                 </div>
                                 <div class="slds-p-left_x-small">Bank Receipt</div>
@@ -88,9 +88,9 @@
                                     onchange={handleInvoiceDateChange} variant="label-hidden"></lightning-input>
                             </div>
                             <div class="slds-col slds-size_1-of-5" style="padding-left: 10px;">
-                                <lightning-combobox name="" variant="label-hidden" class="referenceclass"
-                                    options={referenceOptions} value={selectedReference}
-                                    onchange={handleReferenceChange}></lightning-combobox>
+                                <lightning-input type="text" name="reference" label="Reference"
+                                    value={selectedReference} onchange={handleReferenceChange}
+                                    variant="label-hidden"></lightning-input>
                             </div>
                             <div class="slds-col slds-size_1-of-5 slds-p-left_x-small" style="margin-top: -21px;">
                                 <c-lookup placeholder="Search..." object-api-name="s2p3__Currency__c"
@@ -105,7 +105,7 @@
                         </div>
 
                         <div class="slds-border_bottom"
-                            style="border-bottom : 1px solid; color:#00CC99; width:100%; margin-top: 10px;">
+                            style="border-bottom : 1px solid; color:#00CC99; width:100%; margin: 10px 0px;">
                         </div>
 
                         <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate aquaMarine"><b>Bank
@@ -171,28 +171,6 @@
                                             class="slds-text-color_error">*</Span></legend>
                                 </div>
                             </div>
-
-
-                            <!-- <div class="slds-col slds-size_1-of-5 slds-p-left_x-small" style="margin-top: -21px;">
-                                <c-lookup placeholder="Search..." where-condition={lookUpWhereCondition}
-                                    object-api-name="Account" field-api-name="Name" icon-name="standard:account"
-                                    onselect={handleAccountSelected}></c-lookup>
-                            </div>
-                            <div class="slds-col slds-size_1-of-5" style="padding-left: 10px;">
-                                <lightning-input type="date" name="dateinput" label="Date" value={selectedInvoiceDate}
-                                    onchange={handleInvoiceDateChange} variant="label-hidden"></lightning-input>
-                            </div>
-                            <div class="slds-col slds-size_1-of-5" style="padding-left: 10px;">
-                                <lightning-combobox name="" variant="label-hidden" class="referenceclass"
-                                    options={referenceOptions} value={selectedReference}
-                                    onchange={handleReferenceChange}></lightning-combobox>
-                            </div>
-                            <div class="slds-col slds-size_1-of-5 slds-p-left_x-small" style="margin-top: -21px;">
-                                <c-lookup placeholder="Search..." where-condition={lookUpWhereCondition}
-                                    object-api-name="s2p3__Currency__c" field-api-name="Name"
-                                    icon-name="standard:account" onselect={handleCurrencySelected}></c-lookup>
-                            </div>
-                            <div class="slds-col slds-size_1-of-5" style="padding-left: 10px;"></div> -->
                         </div>
                     </div>
                     <footer class="slds-modal__footer">
