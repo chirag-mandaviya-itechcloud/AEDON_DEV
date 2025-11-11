@@ -1,0 +1,299 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="spinner-overlay">
+            <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+        </div>
+    </template>
+     <article class="slds-card">
+        <div class="custom-card-floating">
+            <div class="slds-card__header slds-grid ">
+                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                    <div class="slds-media__body">
+                        <div class="slds-p-top_small">
+                            <h2 class="slds-card__header-title">
+                                <div class="slds-p-left_x-small">
+                                    <lightning-icon icon-name="custom:custom19" title="custom19" size="small"></lightning-icon>
+                                </div>
+                                <div class="slds-p-left_x-small">Bank Matching Rules</div>
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="slds-no-flex">
+                        <lightning-button label="New" title="New" onclick={handleNewButton} class="slds-m-left_x-small"></lightning-button>
+                    </div>
+                </header>
+            </div>
+            <lightning-datatable key-field="Id" data={allBankListData} columns={columns} show-row-number-column hide-checkbox-column="true"></lightning-datatable>
+        </div>
+
+        <template if:true={openNewRecord}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open modal-level-1" aria-modal="true">
+                <div class="slds-modal__container parentContainerCLass" style="max-width: 100%;width: 75%;">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-text-heading_medium heading">Create New Bank Matching Rule</h2>
+                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeModal}>
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate aquaMarine"><b>Create Bank Rule: {bankMatchingRule.Name}</b></h2>
+                        <div class="slds-page-header__row slds-page-header__row_gutters slds-m-top_small">
+                            <div class="slds-page-header__col-details">
+                                <div class="slds-grid slds-wrap slds-m-top_small">
+                                    <div class="slds-col slds-size_1-of-12">
+                                        <div class="slds-text-title slds-truncate slds-text-heading_medium" title="Only Active rules are considered for Bank Matching."><b>Active</b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Give a name to your rule which is less than 50 characters."><b>Rule Name <Span class="slds-text-color_error">* </Span></b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12">
+                                        <div class="slds-text-title slds-truncate slds-text-heading_medium" title="Bank Account to which matching rules apply."><b>Bank Account <Span class="slds-text-color_error">* </Span></b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Currency of the Bank Account."><b>Currency <Span class="slds-text-color_error">* </Span></b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_6-of-12">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Rule Type"><b>Rule type<Span class="slds-text-color_error">* </Span></b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12 slds-m-top_xx-small">
+                                        <lightning-input type="checkbox" checked={bankMatchingRule.s2p3__Active__c} onchange={checkboxSelectRule}></lightning-input>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12 slds-m-top_xx-small slds-p-right_large">
+                                        <lightning-input type="text" variant="label-hidden" value={bankMatchingRule.Rule_Name__c} onchange={mrRuleNameChanged} title=""></lightning-input>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12 slds-m-top_xx-small">
+                                        <div class="slds-truncate" title={bankAccountName.Name}>{bankAccountObj.Name}</div>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12 slds-m-top_xx-small">
+                                        <div class="" title="">{bankAccountObj.s2p3__Currency__r.s2p3__ISO_Code__c}</div>
+                                    </div>
+                                    <div class="slds-col slds-size_6-of-12 slds-m-top_xx-small">
+                                        <lightning-radio-group type="button" name="bankAction" options={bankOptions} value={selectedBankAction} onchange={handleBankActionChange}> </lightning-radio-group>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+
+                        <div class="slds-border_bottom" style="border-bottom : 1px solid; color:#00CC99; width:100%;"></div>
+                        <div class="slds-grid slds-gutter slds-p-vertical_xx-small">
+                            <div class="slds-col slds-size_4-of-12">
+                                <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate aquaMarine"><b>Match Reference</b></h2>
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-size_3-of-12  slds-p-vertical_small">
+                                        <div class="slds-text-title slds-truncate slds-text-heading_medium" title="Only Active matching fields are considered for Bank Matching."><b>Active</b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small">
+                                        <lightning-input  type="checkbox" id="ruleActive" checked={bankMatchingRule.s2p3__Code_Active__c} onchange={checkboxSelectCode}> </lightning-input>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12 slds-p-vertical_small">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Bank Statement fields."><b>Matching Fields <Span class="slds-text-color_error">* </Span></b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small">
+                                        <div class="slds-text-title  slds-text-heading_medium"><b>Reference</b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12 slds-p-vertical_small">
+                                        <div class="slds-text-title slds-truncate slds-text-heading_medium" title="Choose an operator."><b>Operator <Span class="slds-text-color_error">* </Span></b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small slds-p-right_small">
+                                        <lightning-combobox name="codeOperator" variant="label-hidden" value={bankMatchingRule.s2p3__Code_Operator__c} options={codeOperatorOptions} onchange={handleCodeOperatorChange}></lightning-combobox>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12 slds-p-vertical_small">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Enter a value to look for in Bank Statements."><b>Value</b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small slds-p-right_small">
+                                        <lightning-input type="text" variant="label-hidden" value={codeValue} onchange={handleCodeValueChange}></lightning-input>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="border-left: 1px solid; color:#00CC99; height: 228px;width :1px;"></div>
+                            <div class="slds-col slds-size_4-of-12">
+                                <h2 id="modal-heading-05" class="slds-text-heading_medium slds-hyphenate aquaMarine slds-p-horizontal_x-small"><b>Match Description</b></h2>
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-size_3-of-12 slds-p-left_x-small slds-p-vertical_small">
+                                        <div class="slds-text-title slds-truncate slds-text-heading_medium" title="Only Active matching fields are considered for Bank Matching."><b>Active</b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small ">
+                                        <lightning-input id="descriptionActive" checked={bankMatchingRule.s2p3__Description_Active__c} type="checkbox"  onchange={checkboxSelectDescription}></lightning-input>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12 slds-p-left_x-small slds-p-vertical_small">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Bank Statement fields."><b>Matching Fields <Span class="slds-text-color_error">* </Span></b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Description"><b>Description</b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12 slds-p-left_x-small slds-p-vertical_small ">
+                                        <div class="slds-text-title slds-truncate slds-text-heading_medium" title="Choose an operator."><b>Operator <Span class="slds-text-color_error">* </Span></b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small slds-p-right_small">
+                                        <lightning-combobox name="descOperator" variant="label-hidden" value={bankMatchingRule.s2p3__Description_Operator__c} options={codeOperatorOptions} onchange={handleDescOperatorChange}></lightning-combobox>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12 slds-p-left_x-small slds-p-vertical_small">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Enter a value to look for in Bank Statements."><b>Value</b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small slds-p-right_small">
+                                        <lightning-input type="text" variant="label-hidden" value={descValue} onchange={handleDescValueChange}></lightning-input>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="border-left: 1px solid; color:#00CC99; height: 228px; width :1px;"></div>
+                            <div class="slds-col slds-size_4-of-12">
+                                <h2 id="modal-heading-06" class="slds-text-heading_medium slds-hyphenate aquaMarine slds-p-horizontal_x-small"><b>Match Amount</b></h2>
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-size_3-of-12 slds-p-left_x-small slds-p-vertical_small">
+                                        <div class="slds-text-title slds-truncate slds-text-heading_medium" title="Only Active matching fields are considered for Bank Matching."><b>Active</b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small ">
+                                        <lightning-input data-id="descriptionActive" type="checkbox" checked={bankMatchingRule.s2p3__Amount_Active__c} onchange={checkboxSelectAmount}></lightning-input>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12 slds-p-left_x-small slds-p-vertical_small">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Bank Statement fields."><b>Matching Fields <Span class="slds-text-color_error">* </Span></b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Description"><b>Amount</b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12 slds-p-left_x-small slds-p-vertical_small ">
+                                        <div class="slds-text-title slds-truncate slds-text-heading_medium" title="Choose an operator."><b>Operator <Span class="slds-text-color_error">* </Span></b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small slds-p-right_small">
+                                        <lightning-combobox name="amountOperator" variant="label-hidden" value={bankMatchingRule.s2p3__Amount_Operator__c} options={allamountOperator} onchange={handleAmountOperatorChange}></lightning-combobox>
+
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12 slds-p-left_x-small slds-p-vertical_small">
+                                        <div class="slds-text-title  slds-text-heading_medium" title="Enter a value to look for in Bank Statements."><b>Value</b></div>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 slds-p-vertical_small slds-p-right_small">
+                                        <lightning-input type="number" variant="label-hidden" value={amountValue} onchange={handleAmountValueChange} step="0.01"></lightning-input>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-border_bottom" style="border-bottom : 1px solid; color:#00CC99; width:100%;"></div>
+
+                        <h2 id="modal-heading-08" class="slds-text-heading_medium slds-hyphenate aquaMarine"><b>Posting Rules</b></h2>
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-col slds-size_3-of-12 slds-p-left_x-small">
+                                <div class="slds-truncate" title="Search for Account using the Account Name." >
+                                    <legend class="slds-form-element__legend slds-form-element__label">Account Name<Span class="slds-text-color_error">*</Span></legend>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_3-of-12" style="padding-left: 10px;">
+                                <div class="slds-truncate" title="Choose a reference to populate in your transaction." >
+                                    <legend class="slds-form-element__legend slds-form-element__label">Reference<Span class="slds-text-color_error">*</Span></legend>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_6-of-12">
+                            </div>
+                            <div class="slds-col slds-size_3-of-12 slds-p-left_x-small" style="margin-top: -18px;" >
+                                <c-lookup  placeholder="Search..." where-condition={lookUpWhereCondition} object-api-name="Account" field-api-name="Name" icon-name="standard:account" onselect={handleAccountSelected} ></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_3-of-12" style="padding-left: 10px;">
+                                <lightning-combobox name="select1" variant="label-hidden" class="referenceclass" options={referenceOptions} value={selectedReference} onchange={handleReferenceChange}></lightning-combobox>
+                            </div>
+                            <div class="slds-col slds-size_6-of-12">
+                            </div>
+                            
+                            <div class="slds-col slds-size_2-of-12 slds-p-left_x-small">
+                                <div class="slds-truncate" title="Search for Product using the Account Name." >
+                                    <legend class="slds-form-element__legend slds-form-element__label">Product Name</legend>
+                                </div>
+                            </div>
+
+                            <div class="slds-col slds-size_2-of-12" style="padding-left: 10px;">
+                                <div class="slds-truncate" >
+                                    <legend class="slds-form-element__legend slds-form-element__label">Sub Ledger<Span class="slds-text-color_error">*</Span></legend>
+                                </div>
+                            </div>
+
+                            <div class="slds-col slds-size_2-of-12" style="padding-left: 10px;">
+                                <div class="slds-truncate">
+                                    <legend class="slds-form-element__legend slds-form-element__label">Tax Group<Span class="slds-text-color_error">*</Span></legend>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_2-of-12">
+                                <legend class="slds-form-element__legend slds-form-element__label">Analysis Code One</legend>
+                            </div>
+                            <div class="slds-col slds-size_2-of-12">
+                                <legend class="slds-form-element__legend slds-form-element__label">Analysis Code Two</legend>
+                            </div>
+                            <div class="slds-col slds-size_2-of-12">
+                                <legend class="slds-form-element__legend slds-form-element__label">Add Analysis Code's<Span class="slds-text-color_error"></Span></legend>
+                            </div>
+
+                            <div class="slds-col slds-size_2-of-12 slds-p-left_x-small" style="margin-top: -18px;" >
+                                <c-lookup  placeholder="Search..." where-condition={productCondition} object-api-name="Product2" field-api-name="Name" icon-name="standard:Product" onselect={handleProductSelectedSelected} ></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_2-of-12 slds-p-left_x-small" style="margin-top: -18px;" >
+                                <c-lookup  placeholder="Search..." where-condition={subLedgerCondition} object-api-name="s2p3__Sub_Ledger__c" field-api-name="s2p3__SubLedger_Name_and_Number__c" icon-name="custom:custom20" onselect={handleSubLedgerSelectedSelected} ></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_2-of-12 slds-p-left_x-small" style="margin-top: -18px;" >
+                                <c-lookup  placeholder="Search..." where-condition={taxCondition} object-api-name="s2p3__Tax_Group__c" field-api-name="Name" icon-name="custom:custom58" onselect={handleTaxGroupSelectedSelected} ></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_2-of-12 slds-p-left_x-small" style="margin-top: -18px;">
+                                <c-lookup  placeholder="Search..."  object-api-name="s2p3__Analysis_1__c" field-api-name="Name" icon-name="custom:custom62" onselect={handleAnalysisCodeOne} field-name="s2p3__Analysis_1__c"></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_2-of-12 slds-p-left_x-small" style="margin-top: -18px;">
+                                <c-lookup  placeholder="Search..." object-api-name="s2p3__Analysis_2__c" field-api-name="Name" icon-name="custom:custom62" onselect={handleAnalysisCodeTwo} field-name="s2p3__Analysis_2__c"></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_2-of-12 slds-p-left_x-small">
+                                <lightning-button-icon icon-name="utility:add" variant="brand" alternative-text="Add Analysis Code" class="slds-m-left_xx-small" title="Add Analysis Code" onclick={openAnalysis}></lightning-button-icon>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button variant="brand" label="Save" title="Save" onclick={handleSave} class="slds-m-left_x-small"></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open backdrop-level-1"></div>
+        </template>
+
+        <template if:true={addAnalysisCode}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open model-level-2" aria-modal="true">
+                <div class="slds-modal__container " style="max-width: 100%;width: 75%;">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-text-heading_medium heading">Add Analysis Code</h2>
+                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeAnalysis}>
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-col slds-size_3-of-12 slds-p-left_x-small">
+                                <c-lookup  placeholder="Search..." label="Analysis Code Three" object-api-name="s2p3__Analysis_3__c" field-api-name="Name" icon-name="custom:custom62" onselect={handleAnalysisCodeThree}  field-name="s2p3__Analysis_3__c"></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_3-of-12 slds-p-left_x-small">
+                                <c-lookup  placeholder="Search..." label="Analysis Code Four" object-api-name="s2p3__Analysis_4__c" field-api-name="Name" icon-name="custom:custom62" onselect={handleAnalysisCodeFour} field-name="s2p3__Analysis_4__c" ></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_3-of-12 slds-p-left_x-small">
+                                <c-lookup  placeholder="Search..." label="Analysis Code Five" object-api-name="s2p3__Analysis_5__c" field-api-name="Name" icon-name="custom:custom62" onselect={handleAnalysisCodeFive} field-name="s2p3__Analysis_5__c" ></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_3-of-12 slds-p-left_x-small">
+                                <c-lookup  placeholder="Search..." label="Analysis Code Six"  object-api-name="s2p3__Analysis_6__c" field-api-name="Name" icon-name="custom:custom62" onselect={handleAnalysisCodeSix} field-name="s2p3__Analysis_6__c" ></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_3-of-12 slds-p-left_x-small">
+                                <c-lookup  placeholder="Search..." label="Analysis Code Seven" object-api-name="s2p3__Analysis_7__c" field-api-name="Name" icon-name="custom:custom62" onselect={handleAnalysisCodeSeven} field-name="s2p3__Analysis_7__c" ></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_3-of-12 slds-p-left_x-small">
+                                <c-lookup  placeholder="Search..." label="Analysis Code Eight" object-api-name="s2p3__Analysis_8__c" field-api-name="Name" icon-name="custom:custom62" onselect={handleAnalysisCodeEight} field-name="s2p3__Analysis_8__c" ></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_3-of-12 slds-p-left_x-small">
+                                <c-lookup  placeholder="Search..." label="Analysis Code Nine" object-api-name="s2p3__Analysis_9__c" field-api-name="Name" icon-name="custom:custom62" onselect={handleAnalysisCodeNine} field-name="s2p3__Analysis_9__c" ></c-lookup> 
+                            </div>
+                            <div class="slds-col slds-size_3-of-12 slds-p-left_x-small">
+                                <c-lookup  placeholder="Search..." label="Analysis Code Ten" object-api-name="s2p3__Analysis_10__c" field-api-name="Name" icon-name="custom:custom62" onselect={handleAnalysisCodeTen} field-name="s2p3__Analysis_10__c" ></c-lookup> 
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button variant="brand" label="Close" title="Close" onclick={closeAnalysis} class="slds-m-left_x-small"></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open model-level-2"></div>
+        </template>
+    </article>
+</template>
