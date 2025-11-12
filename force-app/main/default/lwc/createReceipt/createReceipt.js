@@ -129,6 +129,7 @@ export default class CreateReceipt extends LightningElement {
 
     closeModal(event) {
         this.openNewRecord = false;
+        this.clearFieldSelection();
     }
 
     handleSave() {
@@ -151,12 +152,21 @@ export default class CreateReceipt extends LightningElement {
                 this.openNewRecord = false;
                 this.dispatchEvent(new RefreshEvent());
                 this.connectedCallback();
+                this.clearFieldSelection();
             })
             .catch(error => {
                 this.isLoading = false;
                 this.showToast('Error', 'Error creating Bank Receipt: ' + error.body.message, 'error');
                 console.error('Error saving Record:', error);
             });
+    }
+
+    clearFieldSelection() {
+        this.accountSelected = '';
+        this.selectedInvoiceDate = '';
+        this.selectedReference = '';
+        this.selectedCurrency = '';
+        this.exchangeRate = '';
     }
 
     validateFields() {
