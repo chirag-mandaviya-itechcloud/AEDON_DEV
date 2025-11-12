@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>58.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightning__FlowScreen</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="parentId" label="Parent RecordId" type="String" />
+            <property name="childObjectLabel" label="Child Object Label" type="String"
+                required="true"
+                default="Contact" />
+            <property name="childObjectApiName" label="Child Object Api Name" type="String"
+                required="true"
+                default="Contact" />
+            <property name="fieldSetName" label="Child Object FieldSet Name" type="String"
+                required="true" default="ContactFieldSet" />
+            <property name="parentChildRelationApiName" label="Parent Child Relation FieldApiName"
+                type="String"
+                required="true" default="AccountId" />
+            <property name="sortingFields" label="FieldApiNames of Sorting Fields"
+                type="String" placeholder="CreatedDate,LastModifiedDate"
+                required="false" default="CreatedDate,LastModifiedDate"
+                description="Enter Comma Seperated values (FieldApiName) if you want to sort the rows based on mulitple fields, If you don't set this attribute, default is CreatedDate,LastModifiedDate." />
+            <property name="sortingOrder" label="Sorting Order" datasource="ASC,DESC"
+                type="String" placeholder="Default ASC" description="Select the Order of Sort."
+                required="false" default="ASC" />
+        </targetConfig>
+        <targetConfig targets="lightning__RecordPage">
+            <property name="childObjectLabel" label="Child Object Label" type="String"
+                required="true"
+                default="Contact" />
+            <property name="childObjectApiName" label="Child Object Api Name" type="String"
+                required="true"
+                default="Contact" />
+            <property name="fieldSetName" label="Child Object FieldSet Name" type="String"
+                required="true" default="ContactFieldSet" />
+            <property name="parentChildRelationApiName" label="Parent Child Relation FieldApiName"
+                type="String"
+                required="true" default="AccountId" />
+            <property name="sortingFields" label="FieldApiNames of Sorting Fields"
+                type="String" placeholder="CreatedDate,LastModifiedDate"
+                required="false" default="CreatedDate,LastModifiedDate"
+                description="Enter Comma Seperated values (FieldApiName) if you want to sort the rows based on mulitple fields, If you don't set this attribute, default is CreatedDate,LastModifiedDate." />
+            <property name="sortingOrder" label="Sorting Order" datasource="ASC,DESC"
+                type="String" placeholder="Default ASC" description="Select the Order of Sort."
+                required="false" default="ASC" />
+        </targetConfig>
+        <targetConfig targets="lightning__AppPage">
+            <property name="childObjectLabel" label="Child Object Label" type="String"
+                required="true"
+                default="Contact" />
+            <property name="childObjectApiName" label="Child Object Api Name" type="String"
+                required="true"
+                default="Contact" />
+            <property name="fieldSetName" label="Child Object FieldSet Name" type="String"
+                required="true" default="ContactFieldSet" />
+        </targetConfig>
+        <targetConfig targets="lightning__HomePage">
+            <property name="childObjectLabel" label="Child Object Label" type="String"
+                required="true"
+                default="Contact" />
+            <property name="childObjectApiName" label="Child Object Api Name" type="String"
+                required="true"
+                default="Contact" />
+            <property name="fieldSetName" label="Child Object FieldSet Name" type="String"
+                required="true" default="ContactFieldSet" />
+            <property name="sortingFields" label="FieldApiNames of Sorting Fields"
+                type="String" placeholder="CreatedDate,LastModifiedDate"
+                required="false" default="CreatedDate,LastModifiedDate"
+                description="Enter Comma Seperated values (FieldApiName) if you want to sort the rows based on mulitple fields. If you don't set this attribute, default is CreatedDate,LastModifiedDate." />
+            <property name="sortingOrder" label="Sorting Order" datasource="ASC,DESC"
+                type="String" placeholder="Default ASC" description="Select the Order of Sort."
+                required="false" default="ASC" />
+        </targetConfig>
+    </targetConfigs>
+    <masterLabel>Easy Grid Table</masterLabel>
+</LightningComponentBundle>

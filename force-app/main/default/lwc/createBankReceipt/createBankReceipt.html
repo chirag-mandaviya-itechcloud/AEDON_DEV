@@ -122,20 +122,25 @@
                             <div class="slds-border_bottom"
                                 style="border-bottom : 1px solid; color:#00CC99; width:100%; margin: 10px 0px;">
                             </div>
-                            <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate aquaMarine">
+                            <!-- <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate aquaMarine">
                                 <b>Bank
                                     Receipt Line Items</b>
-                            </h2>
+                            </h2> -->
                             <div>
-                                <p>Please Enter Details</p>
+                                <c-grid-table-dynamic record-id={recordId}
+                                    object-api-name="s2p3__Bank_Receipt_Header__c"
+                                    child-object-api-name="s2p3__Bank_Receipt_Transaction__c"
+                                    field-set-name="s2p3__Line_Item_Component_Fields"
+                                    child-object-label="Bank Receipt Transaction"
+                                    parent-child-relation-api-name="s2p3__Bank_Receipt_Header__c"></c-grid-table-dynamic>
                             </div>
+                            <!-- </template> -->
                         </div>
-                        <!-- </template> -->
-                    </div>
-                    <!-- <footer class="slds-modal__footer">
+                        <!-- <footer class="slds-modal__footer">
                         <lightning-button variant="brand" label="Save" title="Save" onclick={handleSave}
                             class="slds-m-left_x-small"></lightning-button>
                     </footer> -->
+                    </div>
                 </div>
             </section>
             <div class="slds-backdrop slds-backdrop_open backdrop-level-1"></div>

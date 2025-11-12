@@ -1,0 +1,251 @@
+<template>
+
+    <lightning-card>
+        <div class="overrideStyle"></div>
+        <template if:true={showToastMessage}>
+            <section style="text-align: center;font-weight: bold;color: red;">
+                <p>{toastMessage}</p>
+            </section>
+        </template>
+        <!-- New Button -->
+        <!-- <lightning-button class="slds-p-around_xxx-small" icon-name="utility:new" label="New" slot="actions"
+            onclick={handleNewClick}></lightning-button> -->
+            <div style="display: flex;justify-content: space-between;margin-bottom: 5px;">
+                <h2 style="font-weight: bold;font-size: 20px;">{childObjectLabel}</h2>
+                <div class="action_btn">
+
+                    <!-- Product Default -->
+                    <template if:false={hideAddButton}>
+                        <lightning-button variant="neutral" label="Add Default Products" title="Add Default Products" onclick={handleAddProductDefult} class="slds-m-left_x-small"></lightning-button>
+                    </template>
+
+                    <!--<lightning-button-icon class="slds-p-around_xxx-small" icon-name="utility:product" label="product" slot="actions"
+                        onclick={handleAddProductDefult}></lightning-button-icon>-->
+
+                    <template if:false={hideAddButton}>
+                        <lightning-button variant="neutral" label="New" title="Add New Line Items" onclick={handleAdd} class="slds-m-left_x-small"></lightning-button>
+                        <!--<lightning-button-icon class="slds-p-around_xxx-small" icon-name="utility:new" label="New" slot="actions"
+                        onclick={handleAdd}></lightning-button-icon>-->
+                    </template>
+        
+                    <!-- Save Button -->
+                    <lightning-button variant="neutral" label={toggleSaveLabel} title={toggleSaveLabel} onclick={handleSaveClick} class="slds-m-left_x-small" disabled={getSaveButtonDisable}></lightning-button>
+                    <!--<lightning-button-icon class="slds-p-around_xxx-small" label={toggleSaveLabel} icon-name="utility:save"
+                        disabled={getSaveButtonDisable} slot="actions" onclick={handleSaveClick}>
+                    </lightning-button-icon>-->
+        
+                    <!-- Reload Button -->
+                    <lightning-button-icon class="slds-p-around_xxx-small" icon-name="utility:refresh" slot="actions"
+                        onclick={handleRefresh}></lightning-button-icon>
+        
+                    <!-- Cancel Button -->
+                    <!--<lightning-button-icon class="slds-p-around_xxx-small" label="Cancel" icon-name="utility:close" slot="actions"
+                        disabled={getCancelButtonDisable} onclick={handleCancel}>
+                    </lightning-button-icon>-->
+                </div>
+            </div>
+        
+        
+
+        <!-- Custom HTML Table -->
+        <template if:true={columns}>
+            <!-- Table -->
+            <div class="slds-scrollable_x slds-scrollable_y" style="height:300px; overflow-y: auto;">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered" style=" width: 100%;">
+                    <thead style="position: sticky; top: 0; z-index: 10;">
+                        <tr>
+                            <template for:each={columns} for:index="index" for:item="item">
+                                <th scope="col" key={item.label}>
+                                    <div class="slds-truncate" title={item.label} style="width: 100px;">
+                                        <template lwc:if={item.isRequired}>
+                                            <span style="color: red;font-weight: 600;color: red;font-size: 18px;padding-right: 2px;line-height: 16px;">*</span>
+                                        </template>
+                                        {item.label}
+                                    </div>
+                                </th>
+                            </template>
+                            <template if:false={hideAddButton}>
+                                <th scope="col">
+                                    <div align="right" class="slds-truncate" title={Delete}>Delete</div>
+                                </th>
+                            </template>
+                            <template if:true={hideAddButton}>
+                                <template if:true={salesPOA}>
+                                    <th scope="col">
+                                        <div align="right" class="slds-truncate" title={Delete}>Delete</div>
+                                    </th>
+                                </template>
+                            </template>
+                           
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={data} for:index="rowindex" for:item="row">
+                            <tr key={row.Id} class="slds-hint-parent">
+                                <template for:each={columns} for:index="index" for:item="column">
+                                    <td scope="col" key={row.Id} ondblclick={onDoubleClickEdit} style="position: relative;">
+                                        <div style="display: flex;justify-content: space-between;">
+                                            <div title={column.label}>
+                                                <template lwc:if={getIsEdited}>
+                                                    <c-override-input-g-d-t is-read-only="false" column-read-only="false"
+                                                        input-data="lookupinput" row={row} row-index={rowindex}
+                                                        column={column} is-edit-mode={row.isDisabled}
+                                                        object-name={childObjectApiName}
+                                                        onchangedataupdate={handleDataChange} field-set-name={fieldSetName}></c-override-input-g-d-t>
+                                                </template>
+                                                <template lwc:else>
+                                                    <c-override-input-g-d-t is-read-only="false" column-read-only="false"
+                                                        input-data="lookupinput" row={row} row-index={rowindex}
+                                                        column={column} is-edit-mode={row.isDisabled}
+                                                        object-name={childObjectApiName}
+                                                        onchangedataupdate={handleDataChange} field-set-name={fieldSetName}></c-override-input-g-d-t>
+                                                </template>
+                                            </div>
+                                            <template if:true={column.isTaxAvailable}>
+                                                <template if:true={row.s2p3__Tax_Group__r}>
+                                                 <template if:false={row.isDisabled}> 
+                                                    <lightning-icon data-row-id={row.Id} data-tax-id={row.s2p3__Tax_Group__r.Id} icon-name="utility:add" alternative-text="add" size="x-small" style="margin-right: 10px;cursor: pointer;" onclick={getTaxCodeData}></lightning-icon> 
+                                                    <template if:true={row.showTax}>
+                                                        <div style="position:absolute; background:white; border:1px solid #ddd; padding:10px; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.2); z-index:10;right: 0;top: 0;">
+                                                            <div class="popup-header" style="margin-bottom: 5px;font-size: 13px;font-weight: bold;">
+                                                                <span class="popup-title">Tax Details ( {row.s2p3__Tax_Group__r.Name} )</span>
+                                                                <lightning-icon data-row-id={row.Id} icon-name="utility:close" alternative-text="Close" size="x-small" onclick={closeTaxPopup} style="position: absolute;top: -32px;right: -10px;background-color: white;padding: 5px;box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);cursor: pointer;"></lightning-icon>
+                                                            </div>
+                                                            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th scope="col">Tax Name</th>
+                                                                        <th scope="col">Tax Rate</th>
+                                                                        <th scope="col">Tax Amount</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <template for:each={taxList} for:item="tax">
+                                                                        <tr key={tax.Id}>
+                                                                            <td>{tax.s2p3__Tax_Name__c}</td>
+                                                                            <td>{tax.s2p3__Tax_Rate__c}%</td>
+                                                                            <td>{tax.Amount}</td>
+                                                                        </tr>
+                                                                    </template>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </template>
+                                                </template>
+                                                </template>
+                                            </template>
+                                        </div>
+                                       
+                                    </td>
+                                </template>
+                                <template if:false={hideAddButton}>
+                                    <td scope="col" key={row.Id} ondblclick={onDoubleClickEdit}>
+                                        <div align="right">
+                                            <a name={rowindex} data-id={row.Id} onclick={handleDeleteIconClick}>
+                                                <lightning-icon icon-name="utility:delete" alternative-text="delete"
+                                                    size="x-small"></lightning-icon>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </template>
+                                <template if:true={hideAddButton}>
+                                    <template if:true={salesPOA}>
+                                        <td scope="col" key={row.Id} ondblclick={onDoubleClickEdit}>
+                                            <div align="right">
+                                                <a name={rowindex} data-id={row.Id} onclick={handleDeleteIconClick}>
+                                                    <lightning-icon icon-name="utility:delete" alternative-text="delete"
+                                                        size="x-small"></lightning-icon>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </template>
+                                </template>
+                            </tr>
+                        </template>
+                        <template if:false={isNoRecords}>
+                            <template if:false={isJournal}>
+                                <tr if:false={isPoaTransaction}>
+                                    <td colspan={colSpanSizes}></td>
+                                    <td ><b>Totals</b></td>
+                                    <td if:true={showNet} ><b>{sumOfTransactionAmount}</b></td>
+                                    <td if:true={showTaxAmt} ><b>{sumOfTaxPayable}</b></td>
+                                    <td if:true={showGross} ><b>{sumofGrossAmount}</b></td>
+                                    <td></td>
+                                </tr>
+                                <!--<tr>
+                                    <td colspan={colSpanSizes}></td>
+                                    <td><b>Total Amount</b></td>
+                                    <td><b>{totalAmount}</b></td>
+                                    <td></td>
+                                </tr>-->
+                            </template>
+                            <template if:true={isJournal}>
+                                <tr>
+                                    <td colspan={colSpanSizes}></td>
+                                    <td><b>TOTAL</b></td>
+                                    <td><b>{totalDebit}</b></td>
+                                    <td><b>{totalCredit}</b></td>
+                                    <td></td>
+                                </tr>
+                                <tr if:true={totalIsOutByNotZero}>
+                                    <td colspan={colSpanSizes}></td>
+                                    <td></td>
+                                    <td style="color: red;"><b>Total is out by</b></td>
+                                    <td style="color: red;">{totalIsOutByValue}</td>
+                                    <td></td>
+                                </tr>
+                            </template>
+                        </template>
+                        <template if:true={isNoRecords}>
+                            <tr>
+                                <td colspan={allColSpanSizes} style="text-align: center;">No Data Found...</td>
+                            </tr>
+                        </template>
+                            <!-- <tr>
+                                <td colspan={colSpanSizes}>
+                                    NO Data Found...
+                                </td>
+                            </tr> -->
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <!-- Loader -->
+        <template if:true={showLoader}>
+            <div class="exampleHolder">
+                <lightning-spinner alternative-text="Loading" size="large" variant="Brand"></lightning-spinner>
+            </div>
+        </template>
+
+    </lightning-card>
+
+    <!-- Delete Box -->
+    <template if:true={showDeleteBox}>
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading-01"
+            class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close"
+                    onclick={hideDeleteBox}>
+                    <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse"
+                        size="small"></lightning-icon>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <div class="slds-modal__header">
+                    <h1 id="modal-delete-heading" class="slds-modal__title slds-hyphenate">Delete Record</h1>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-delete">
+                    <p>Are you sure you want to delete this?</p>
+                </div>
+                <div class="slds-modal__footer">
+                    <lightning-button label="Cancel" title="Non-primary action" onclick={hideDeleteBox}
+                        class="slds-m-left_x-small"></lightning-button>
+                    <lightning-button variant="destructive" label="Delete" title="Primary action"
+                        onclick={handleDeleteClicked} class="slds-m-left_x-small"></lightning-button>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+    </template>
+
+</template>
