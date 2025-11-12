@@ -117,25 +117,36 @@
 
 
 
-                        <!-- <template if:true={openLineItemsPart}> -->
-                        <div class={divClass}>
-                            <div class="slds-border_bottom"
-                                style="border-bottom : 1px solid; color:#00CC99; width:100%; margin: 10px 0px;">
+                        <template if:false={openLineItemsPart}>
+                            <div class={divClass}>
+                                <div class="slds-border_bottom"
+                                    style="border-bottom : 1px solid; color:#00CC99; width:100%; margin: 10px 0px;">
+                                </div>
+                                <div>
+                                    <c-grid-table-dynamic record-id={bankReceiptId} parent-id={bankReceiptId}
+                                        object-api-name="s2p3__Bank_Receipt_Header__c"
+                                        child-object-api-name="s2p3__Bank_Receipt_Transaction__c"
+                                        field-set-name="s2p3__Line_Item_Component_Fields"
+                                        child-object-label="Bank Receipt Transaction"
+                                        parent-child-relation-api-name="s2p3__Bank_Receipt_Header__c"></c-grid-table-dynamic>
+                                </div>
                             </div>
-                            <!-- <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate aquaMarine">
-                                <b>Bank
-                                    Receipt Line Items</b>
-                            </h2> -->
-                            <div>
-                                <c-grid-table-dynamic record-id={recordId}
-                                    object-api-name="s2p3__Bank_Receipt_Header__c"
-                                    child-object-api-name="s2p3__Bank_Receipt_Transaction__c"
-                                    field-set-name="s2p3__Line_Item_Component_Fields"
-                                    child-object-label="Bank Receipt Transaction"
-                                    parent-child-relation-api-name="s2p3__Bank_Receipt_Header__c"></c-grid-table-dynamic>
+                        </template>
+                        <template if:true={openLineItemsPart}>
+                            <div class={divClass}>
+                                <div class="slds-border_bottom"
+                                    style="border-bottom : 1px solid; color:#00CC99; width:100%; margin: 10px 0px;">
+                                </div>
+                                <div>
+                                    <c-grid-table-dynamic record-id={bankReceiptId} parent-id={bankReceiptId}
+                                        object-api-name="s2p3__Bank_Receipt_Header__c"
+                                        child-object-api-name="s2p3__Bank_Receipt_Transaction__c"
+                                        field-set-name="s2p3__Line_Item_Component_Fields"
+                                        child-object-label="Bank Receipt Transaction"
+                                        parent-child-relation-api-name="s2p3__Bank_Receipt_Header__c"></c-grid-table-dynamic>
+                                </div>
                             </div>
-                            <!-- </template> -->
-                        </div>
+                        </template>
                         <!-- <footer class="slds-modal__footer">
                         <lightning-button variant="brand" label="Save" title="Save" onclick={handleSave}
                             class="slds-m-left_x-small"></lightning-button>

@@ -8,7 +8,7 @@ public class CreateBankReceiptController {
 	}
 
 	@AuraEnabled
-	public static void saveReceiptHeaderDetails(String accountId, Date invoiceDate, String customerReference, String currencyId, Decimal exchangeRate, String bankRecordId){
+	public static List<sObject> saveReceiptHeaderDetails(String accountId, Date invoiceDate, String customerReference, String currencyId, Decimal exchangeRate, String bankRecordId){
 		try {
 			Bank_Receipt_Header__c bankReceipt = new Bank_Receipt_Header__c();
 			bankReceipt.To_Account__c = accountId;
@@ -19,6 +19,7 @@ public class CreateBankReceiptController {
 			bankReceipt.Bank_Account__c = bankRecordId;
 			bankReceipt.Company__c = UtilsController.getCompanyInformation().Id;
 			List<sObject> resultList = DBOpsUtils.s2p3Insert(new List<sObject>{ bankReceipt });
+			return resultList;
 
 		} catch (Exception e) {
 			system.debug('ex=>'+e.getStackTraceString());

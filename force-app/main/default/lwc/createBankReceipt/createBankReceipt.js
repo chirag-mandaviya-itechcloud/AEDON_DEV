@@ -38,6 +38,7 @@ export default class CreateBankReceipt extends LightningElement {
     @track openLineItemsPart = false;
     @track bankHeaderCreated = false;
     @track isModalLoading = false;
+    @track bankReceiptId = '';
 
     columns = columns;
 
@@ -164,11 +165,13 @@ export default class CreateBankReceipt extends LightningElement {
                 // this.clearFieldSelection();
                 this.openLineItemsPart = true;
                 this.bankHeaderCreated = true;
+                this.bankReceiptId = result[0].Id;
 
             })
             .catch(error => {
                 this.isLoading = false;
                 this.isModalLoading = false;
+                this.bankReceiptId = '';
                 this.showToast('Error', 'Error creating Bank Receipt: ' + error.body.message, 'error');
                 console.error('Error saving Record:', error);
             });
