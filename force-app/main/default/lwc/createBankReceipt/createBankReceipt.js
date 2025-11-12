@@ -3,7 +3,6 @@ import fetchBankAccountViewNew from "@salesforce/apex/CreateMatchingRuleControll
 import fetchExistingReceipts from '@salesforce/apex/CreateBankReceiptController.fetchExistingReceipts';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import saveReceiptHeaderDetails from '@salesforce/apex/CreateBankReceiptController.saveReceiptHeaderDetails';
-import { RefreshEvent } from 'lightning/refresh';
 
 const columns = [
     {
@@ -134,6 +133,7 @@ export default class CreateBankReceipt extends LightningElement {
         this.openNewRecord = false;
         this.bankHeaderCreated = false;
         this.openLineItemsPart = false;
+        this.bankReceiptId = '';
         this.clearFieldSelection();
     }
 
@@ -146,7 +146,6 @@ export default class CreateBankReceipt extends LightningElement {
         if (!isValid) {
             return;
         }
-        // this.isLoading = true;
         this.isModalLoading = true;
         saveReceiptHeaderDetails({
             bankRecordId: this.recordId,
@@ -157,12 +156,8 @@ export default class CreateBankReceipt extends LightningElement {
             exchangeRate: this.exchangeRate
         })
             .then(result => {
-                // this.isLoading = false;
                 this.isModalLoading = false;
-                this.showToast('Success', 'Bank Receipt created successfully.', 'success');
-                // this.dispatchEvent(new RefreshEvent());
-                // this.connectedCallback();
-                // this.clearFieldSelection();
+                this.showToast('Success', 'Bank Receipt Created Successfully.', 'success');
                 this.openLineItemsPart = true;
                 this.bankHeaderCreated = true;
                 this.bankReceiptId = result[0].Id;
@@ -172,7 +167,7 @@ export default class CreateBankReceipt extends LightningElement {
                 this.isLoading = false;
                 this.isModalLoading = false;
                 this.bankReceiptId = '';
-                this.showToast('Error', 'Error creating Bank Receipt: ' + error.body.message, 'error');
+                this.showToast('Error', 'Error Creating Bank Receipt: ' + error.body.message, 'error');
                 console.error('Error saving Record:', error);
             });
     }

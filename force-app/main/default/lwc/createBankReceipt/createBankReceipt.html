@@ -28,7 +28,6 @@
             <lightning-datatable key-field="Id" data={allBankReceiptData} columns={columns} show-row-number-column
                 hide-checkbox-column="true"></lightning-datatable>
         </div>
-
         <template if:true={openNewRecord}>
             <template if:true={isModalLoading}>
                 <div class="spinner-overlay">
@@ -67,22 +66,18 @@
                                             class="slds-text-color_error">*</Span></legend>
                                 </div>
                             </div>
-
                             <div class="slds-col slds-size_1-of-5" style="padding-left: 10px;">
                                 <div class="slds-truncate" title="Choose a reference to populate in your transaction.">
                                     <legend class="slds-form-element__legend slds-form-element__label">Currency<Span
                                             class="slds-text-color_error">*</Span></legend>
                                 </div>
                             </div>
-
                             <div class="slds-col slds-size_1-of-5" style="padding-left: 10px;">
                                 <div class="slds-truncate" title="Choose a reference to populate in your transaction.">
                                     <legend class="slds-form-element__legend slds-form-element__label">Exchange
                                         Rate<Span class="slds-text-color_error">*</Span></legend>
                                 </div>
                             </div>
-
-
                             <div class="slds-col slds-size_1-of-5 slds-p-left_x-small" style="margin-top: -17px;">
                                 <c-lookup placeholder="Search..." where-condition={lookUpWhereCondition}
                                     object-api-name="Account" field-api-name="Name" icon-name="standard:account"
@@ -108,15 +103,12 @@
                                     step="0.01"></lightning-input>
                             </div>
                             <div class="slds-col slds-size_10-of-12 slds-p-left_x-small"></div>
-                            <div class="slds-col slds-size_2-of-12" style="margin-top: 10px; padding-left:55px;">
-                                <lightning-button variant="brand" label="Add Line Items" title="Add Line Items"
+                            <div class="slds-col slds-size_2-of-12" style="margin-top: 10px; text-align: end;">
+                                <lightning-button variant="neutral" label="Add Line Items" title="Add Line Items"
                                     onclick={handleSave} class="slds-m-left_x-small"
                                     disabled={bankHeaderCreated}></lightning-button>
                             </div>
                         </div>
-
-
-
                         <template if:false={openLineItemsPart}>
                             <div class={divClass}>
                                 <div class="slds-border_bottom"
@@ -147,10 +139,6 @@
                                 </div>
                             </div>
                         </template>
-                        <!-- <footer class="slds-modal__footer">
-                        <lightning-button variant="brand" label="Save" title="Save" onclick={handleSave}
-                            class="slds-m-left_x-small"></lightning-button>
-                    </footer> -->
                     </div>
                 </div>
             </section>
