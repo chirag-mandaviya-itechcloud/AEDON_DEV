@@ -30,6 +30,11 @@
         </div>
 
         <template if:true={openNewRecord}>
+            <template if:true={isModalLoading}>
+                <div class="spinner-overlay">
+                    <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                </div>
+            </template>
             <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open modal-level-1" aria-modal="true">
                 <div class="slds-modal__container parentContainerCLass" style="max-width: 100%;width: 75%;">
                     <header class="slds-modal__header">
@@ -78,7 +83,7 @@
                             </div>
 
 
-                            <div class="slds-col slds-size_1-of-5 slds-p-left_x-small" style="margin-top: -21px;">
+                            <div class="slds-col slds-size_1-of-5 slds-p-left_x-small" style="margin-top: -17px;">
                                 <c-lookup placeholder="Search..." where-condition={lookUpWhereCondition}
                                     object-api-name="Account" field-api-name="Name" icon-name="standard:account"
                                     onselect={handleAccountSelected}></c-lookup>
@@ -92,7 +97,7 @@
                                     value={selectedReference} onchange={handleReferenceChange}
                                     variant="label-hidden"></lightning-input>
                             </div>
-                            <div class="slds-col slds-size_1-of-5 slds-p-left_x-small" style="margin-top: -21px;">
+                            <div class="slds-col slds-size_1-of-5 slds-p-left_x-small" style="margin-top: -17px;">
                                 <c-lookup placeholder="Search..." object-api-name="s2p3__Currency__c"
                                     field-api-name="Name" icon-name="standard:account"
                                     onselect={handleCurrencySelected}></c-lookup>
@@ -102,81 +107,35 @@
                                     onchange={handleExchangeRateChange} variant="label-hidden"
                                     step="0.01"></lightning-input>
                             </div>
-                        </div>
-
-                        <div class="slds-border_bottom"
-                            style="border-bottom : 1px solid; color:#00CC99; width:100%; margin: 10px 0px;">
-                        </div>
-
-                        <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate aquaMarine"><b>Bank
-                                Receipt Line Items</b></h2>
-                        <div class="slds-grid slds-wrap">
-                            <div class="slds-col slds-size_1-of-12 slds-p-left_x-small">
-                                <div class="slds-truncate" title="Search for Account using the Account Name.">
-                                    <legend class="slds-form-element__legend slds-form-element__label">Product
-                                        Code/Name<Span class="slds-text-color_error">*</Span></legend>
-                                </div>
-                            </div>
-                            <div class="slds-col slds-size_1-of-12" style="padding-left: 10px;">
-                                <div class="slds-truncate" title="Select Invoice Date">
-                                    <legend class="slds-form-element__legend slds-form-element__label">External Product
-                                        Description<Span class="slds-text-color_error">*</Span></legend>
-                                </div>
-                            </div>
-                            <div class="slds-col slds-size_1-of-12" style="padding-left: 10px;">
-                                <div class="slds-truncate" title="Choose a reference to populate in your transaction.">
-                                    <legend class="slds-form-element__legend slds-form-element__label">Quantity<Span
-                                            class="slds-text-color_error">*</Span></legend>
-                                </div>
-                            </div>
-
-                            <div class="slds-col slds-size_1-of-12" style="padding-left: 10px;">
-                                <div class="slds-truncate" title="Choose a reference to populate in your transaction.">
-                                    <legend class="slds-form-element__legend slds-form-element__label">Unit Price<Span
-                                            class="slds-text-color_error">*</Span></legend>
-                                </div>
-                            </div>
-
-                            <div class="slds-col slds-size_1-of-12" style="padding-left: 10px;">
-                                <div class="slds-truncate" title="Choose a reference to populate in your transaction.">
-                                    <legend class="slds-form-element__legend slds-form-element__label">Nominal Code<Span
-                                            class="slds-text-color_error">*</Span></legend>
-                                </div>
-                            </div>
-
-                            <div class="slds-col slds-size_1-of-12" style="padding-left: 10px;">
-                                <div class="slds-truncate" title="Choose a reference to populate in your transaction.">
-                                    <legend class="slds-form-element__legend slds-form-element__label">Tax Rate<Span
-                                            class="slds-text-color_error">*</Span></legend>
-                                </div>
-                            </div>
-
-                            <div class="slds-col slds-size_1-of-12" style="padding-left: 10px;">
-                                <div class="slds-truncate" title="Choose a reference to populate in your transaction.">
-                                    <legend class="slds-form-element__legend slds-form-element__label">Projects<Span
-                                            class="slds-text-color_error">*</Span></legend>
-                                </div>
-                            </div>
-
-                            <div class="slds-col slds-size_1-of-12" style="padding-left: 10px;">
-                                <div class="slds-truncate" title="Choose a reference to populate in your transaction.">
-                                    <legend class="slds-form-element__legend slds-form-element__label">Net<Span
-                                            class="slds-text-color_error">*</Span></legend>
-                                </div>
-                            </div>
-
-                            <div class="slds-col slds-size_1-of-12" style="padding-left: 10px;">
-                                <div class="slds-truncate" title="Choose a reference to populate in your transaction.">
-                                    <legend class="slds-form-element__legend slds-form-element__label">Tax<Span
-                                            class="slds-text-color_error">*</Span></legend>
-                                </div>
+                            <div class="slds-col slds-size_10-of-12 slds-p-left_x-small"></div>
+                            <div class="slds-col slds-size_2-of-12" style="margin-top: 10px; padding-left:55px;">
+                                <lightning-button variant="brand" label="Add Line Items" title="Add Line Items"
+                                    onclick={handleSave} class="slds-m-left_x-small"
+                                    disabled={bankHeaderCreated}></lightning-button>
                             </div>
                         </div>
+
+
+
+                        <!-- <template if:true={openLineItemsPart}> -->
+                        <div class={divClass}>
+                            <div class="slds-border_bottom"
+                                style="border-bottom : 1px solid; color:#00CC99; width:100%; margin: 10px 0px;">
+                            </div>
+                            <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate aquaMarine">
+                                <b>Bank
+                                    Receipt Line Items</b>
+                            </h2>
+                            <div>
+                                <p>Please Enter Details</p>
+                            </div>
+                        </div>
+                        <!-- </template> -->
                     </div>
-                    <footer class="slds-modal__footer">
+                    <!-- <footer class="slds-modal__footer">
                         <lightning-button variant="brand" label="Save" title="Save" onclick={handleSave}
                             class="slds-m-left_x-small"></lightning-button>
-                    </footer>
+                    </footer> -->
                 </div>
             </section>
             <div class="slds-backdrop slds-backdrop_open backdrop-level-1"></div>

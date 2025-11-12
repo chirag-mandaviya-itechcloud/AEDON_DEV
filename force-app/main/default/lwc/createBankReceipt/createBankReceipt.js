@@ -35,6 +35,9 @@ export default class CreateBankReceipt extends LightningElement {
     @track currencyISOCode;
     @track selectedCurrency;
     @track exchangeRate;
+    @track openLineItemsPart = false;
+    @track bankHeaderCreated = false;
+    @track isModalLoading = false;
 
     columns = columns;
 
@@ -128,7 +131,13 @@ export default class CreateBankReceipt extends LightningElement {
 
     closeModal(event) {
         this.openNewRecord = false;
+        this.bankHeaderCreated = false;
+        this.openLineItemsPart = false;
         this.clearFieldSelection();
+    }
+
+    get divClass() {
+        return this.bankHeaderCreated ? '' : 'disabled-div';
     }
 
     handleSave() {
@@ -136,7 +145,8 @@ export default class CreateBankReceipt extends LightningElement {
         if (!isValid) {
             return;
         }
-        this.isLoading = true;
+        // this.isLoading = true;
+        this.isModalLoading = true;
         saveReceiptHeaderDetails({
             bankRecordId: this.recordId,
             accountId: this.accountSelected,
@@ -146,15 +156,19 @@ export default class CreateBankReceipt extends LightningElement {
             exchangeRate: this.exchangeRate
         })
             .then(result => {
-                this.isLoading = false;
+                // this.isLoading = false;
+                this.isModalLoading = false;
                 this.showToast('Success', 'Bank Receipt created successfully.', 'success');
-                this.openNewRecord = false;
-                this.dispatchEvent(new RefreshEvent());
-                this.connectedCallback();
-                this.clearFieldSelection();
+                // this.dispatchEvent(new RefreshEvent());
+                // this.connectedCallback();
+                // this.clearFieldSelection();
+                this.openLineItemsPart = true;
+                this.bankHeaderCreated = true;
+
             })
             .catch(error => {
                 this.isLoading = false;
+                this.isModalLoading = false;
                 this.showToast('Error', 'Error creating Bank Receipt: ' + error.body.message, 'error');
                 console.error('Error saving Record:', error);
             });
