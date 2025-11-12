@@ -1,4 +1,4 @@
-public class CreateReceiptController {
+public class CreateBankReceiptController {
 	@AuraEnabled
 	public static List<Bank_Receipt_Header__c> fetchExistingReceipts(Id bankRecordId){
 		List<Bank_Receipt_Header__c> bankReceipts = new List<Bank_Receipt_Header__c>();
