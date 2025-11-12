@@ -1,8 +1,8 @@
 import { LightningElement, api, track } from 'lwc';
 import fetchBankAccountViewNew from "@salesforce/apex/CreateMatchingRuleController.fetchBankAccountViewNew";
-import fetchExistingReceipts from '@salesforce/apex/CreateReceiptController.fetchExistingReceipts';
+import fetchExistingReceipts from '@salesforce/apex/CreateBankReceiptController.fetchExistingReceipts';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import saveReceiptHeaderDetails from '@salesforce/apex/CreateReceiptController.saveReceiptHeaderDetails';
+import saveReceiptHeaderDetails from '@salesforce/apex/CreateBankReceiptController.saveReceiptHeaderDetails';
 import { RefreshEvent } from 'lightning/refresh';
 
 const columns = [
@@ -20,8 +20,7 @@ const columns = [
     { label: 'Currency', fieldName: 'currencyName' },
     { label: 'Gross Amount', fieldName: 's2p3__Gross_Amount__c' }
 ];
-
-export default class CreateReceipt extends LightningElement {
+export default class CreateBankReceipt extends LightningElement {
     @api recordId;
     @track isLoading = false;
     @track bankAccountObj = {};
