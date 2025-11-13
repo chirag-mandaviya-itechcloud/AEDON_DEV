@@ -1,7 +1,8 @@
 import { LightningElement, track, api } from 'lwc';
 import saveBankFeed from "@salesforce/apex/BankFeedsListController.saveBankFeed";
 import getBankFeedList from "@salesforce/apex/BankFeedsListController.getBankFeedList";
-import getFilterData from "@salesforce/apex/BankFeedsListController.getFilterData"; 
+import getFilterData from "@salesforce/apex/BankFeedsListController.getFilterData";
+import updateStatementBalanceOnBankAccount from "@salesforce/apex/BankFeedsListController.updateStatementBalanceOnBankAccount";
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { RefreshEvent } from 'lightning/refresh';
 
@@ -17,13 +18,13 @@ const columns = [
     },
     { label: 'Date', fieldName: 'formattedDate' },
     { label: 'Reference', fieldName: 's2p3__Reference__c' },
-    { label: 'Description', fieldName: 's2p3__Description__c'},
-    { label: 'Receipts', fieldName: 's2p3__Receipt__c'},
-    { label: 'Payments', fieldName: 's2p3__Payment__c'},
-    { label: 'Source', fieldName: 's2p3__Source__c'},
-    { label: 'Status', fieldName: 's2p3__Status__c'},
-    {label:'Internal Notes', fieldName : 's2p3__Internal_Notes__c'}
-    
+    { label: 'Description', fieldName: 's2p3__Description__c' },
+    { label: 'Receipts', fieldName: 's2p3__Receipt__c' },
+    { label: 'Payments', fieldName: 's2p3__Payment__c' },
+    { label: 'Source', fieldName: 's2p3__Source__c' },
+    { label: 'Status', fieldName: 's2p3__Status__c' },
+    { label: 'Internal Notes', fieldName: 's2p3__Internal_Notes__c' }
+
 ];
 
 export default class BankFeedsList extends LightningElement {
@@ -53,7 +54,7 @@ export default class BankFeedsList extends LightningElement {
     @track filINotes;
     @track defFilter;
 
-     @track filteredObject = {};
+    @track filteredObject = {};
 
     columns = columns;
 
@@ -88,6 +89,17 @@ export default class BankFeedsList extends LightningElement {
         this.defFilter = this.filteredObject;
 
         this.getBankFeedData();
+        this.updateStatementBalance();
+    }
+
+    updateStatementBalance() {
+        updateStatementBalanceOnBankAccount({ bankId: this.recordId })
+            .then(() => {
+                console.log('Bank statement balance update initiated.');
+            })
+            .catch(error => {
+                console.error('Error updating bank statement balance:', error);
+            });
     }
 
     handleViewChange(event) {
@@ -115,7 +127,7 @@ export default class BankFeedsList extends LightningElement {
         //this.handleInputChange(event);
     }
 
-     handleAmountChange(event) {
+    handleAmountChange(event) {
         this.Amount = event.detail.value;
         //this.handleInputChange(event);
     }
@@ -137,20 +149,20 @@ export default class BankFeedsList extends LightningElement {
         this.generatePDF();
     }
 
-    handleRenew(){
+    handleRenew() {
 
     }
 
     handleRevoke() {
 
     }
-    
-    generatePDF(){
+
+    generatePDF() {
         const recId = this.recordId;
         const selectedFilter = this.filteredObject;
         const defFilter = this.defFilter;
         const filterClick = this.filterData;
-        let url = `/apex/s2p3__BankStatementEXCEL?bankRecordId=${recId}&filterData=${encodeURIComponent(JSON.stringify(selectedFilter))}&defFilter=${encodeURIComponent(JSON.stringify(defFilter))}&filterClick=${filterClick}` ;
+        let url = `/apex/s2p3__BankStatementEXCEL?bankRecordId=${recId}&filterData=${encodeURIComponent(JSON.stringify(selectedFilter))}&defFilter=${encodeURIComponent(JSON.stringify(defFilter))}&filterClick=${filterClick}`;
 
         window.open(url, '_blank');
     }
@@ -168,35 +180,35 @@ export default class BankFeedsList extends LightningElement {
         };
     }
 
-    getBankFeedData(){
+    getBankFeedData() {
         this.isLoading = true;
-        getBankFeedList({ recordId: this.recordId})
-        .then(result => {
-                
-            this.allBankFeedData = result.map(row => ({
-                ...row,
-                recordLink: '/' + row.Id,
-                formattedDate :new Date(row.s2p3__Date__c)
-                    .toLocaleDateString('en-GB') // gives dd/mm/yyyy
-                    .replace(/\//g, '/')    
-            }));
+        getBankFeedList({ recordId: this.recordId })
+            .then(result => {
 
-            if (this.allBankFeedData.length > 0) {
-                this.totalPages = Math.ceil(this.allBankFeedData.length / this.pageSize);
-                this.pageNumber = 1;
-                this.setPageData();
-            } else {
-                this.totalPages = 1;
-                this.pageNumber = 1;
-                this.bankFeedData = [];
-            }
-            this.isLoading = false;
-        })
-        .catch(error => {
-            this.isLoading = false;
-            console.error('Error fetching bank feed:', error);
-            this.showToast('Error', error.body.message, 'error');
-        });
+                this.allBankFeedData = result.map(row => ({
+                    ...row,
+                    recordLink: '/' + row.Id,
+                    formattedDate: new Date(row.s2p3__Date__c)
+                        .toLocaleDateString('en-GB') // gives dd/mm/yyyy
+                        .replace(/\//g, '/')
+                }));
+
+                if (this.allBankFeedData.length > 0) {
+                    this.totalPages = Math.ceil(this.allBankFeedData.length / this.pageSize);
+                    this.pageNumber = 1;
+                    this.setPageData();
+                } else {
+                    this.totalPages = 1;
+                    this.pageNumber = 1;
+                    this.bankFeedData = [];
+                }
+                this.isLoading = false;
+            })
+            .catch(error => {
+                this.isLoading = false;
+                console.error('Error fetching bank feed:', error);
+                this.showToast('Error', error.body.message, 'error');
+            });
     }
 
     handleFilterClick(event) {
@@ -220,31 +232,31 @@ export default class BankFeedsList extends LightningElement {
                 Amount: this.Amount,
                 filINotes: this.filINotes
             })
-            .then(result => {
-                this.allBankFeedData = result.map(row => ({
-                    ...row,
-                    recordLink: '/' + row.Id,
-                    formattedDate: new Date(row.s2p3__Date__c)
-                        .toLocaleDateString('en-GB') // dd/mm/yyyy
-                        .replace(/\//g, '/')
-                }));
+                .then(result => {
+                    this.allBankFeedData = result.map(row => ({
+                        ...row,
+                        recordLink: '/' + row.Id,
+                        formattedDate: new Date(row.s2p3__Date__c)
+                            .toLocaleDateString('en-GB') // dd/mm/yyyy
+                            .replace(/\//g, '/')
+                    }));
 
-                if (this.allBankFeedData.length > 0) {
-                    this.totalPages = Math.ceil(this.allBankFeedData.length / this.pageSize);
-                    this.pageNumber = 1;
-                    this.setPageData();
-                } else {
-                    this.totalPages = 1;
-                    this.pageNumber = 1;
-                    this.bankFeedData = [];
-                }
-                this.isLoading = false;
-            })
-            .catch(error => {
-                this.isLoading = false;
-                console.error('Error fetching bank feed:', error);
-                this.showToast('Error', error.body?.message || error.message, 'error');
-            });
+                    if (this.allBankFeedData.length > 0) {
+                        this.totalPages = Math.ceil(this.allBankFeedData.length / this.pageSize);
+                        this.pageNumber = 1;
+                        this.setPageData();
+                    } else {
+                        this.totalPages = 1;
+                        this.pageNumber = 1;
+                        this.bankFeedData = [];
+                    }
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    this.isLoading = false;
+                    console.error('Error fetching bank feed:', error);
+                    this.showToast('Error', error.body?.message || error.message, 'error');
+                });
         } catch (error) {
             this.isLoading = false;
             this.showToast('Validation Error', error.message, 'error');
@@ -299,24 +311,24 @@ export default class BankFeedsList extends LightningElement {
         this.openNewRecord = false;
     }
 
-    handleSave(){
+    handleSave() {
         if (!this.validateFields()) {
             return; // stop if validation fails
         }
         this.isLoading = true;
-        saveBankFeed({DateSet:this.DateSet, Inotes:this.Inotes, Description: this.Description, Refrence:this.Refrence, Receipt:this.Receipt ? parseFloat(this.Receipt) : null, Payment:this.Payment ? parseFloat(this.Payment) : null, recordId: this.recordId })
-        .then(result => {
-            this.isLoading = false;
-            this.showToast('Success', 'Bank feed record created successfully', 'success');
-            this.openNewRecord = false;
-            this.dispatchEvent(new RefreshEvent());
-            this.resetFields();
-        })
-        .catch(error => {
-            this.isLoading = false;
-            console.log('error=>',error);
-            this.showToast('Error', error.body.message, 'error');
-        });
+        saveBankFeed({ DateSet: this.DateSet, Inotes: this.Inotes, Description: this.Description, Refrence: this.Refrence, Receipt: this.Receipt ? parseFloat(this.Receipt) : null, Payment: this.Payment ? parseFloat(this.Payment) : null, recordId: this.recordId })
+            .then(result => {
+                this.isLoading = false;
+                this.showToast('Success', 'Bank feed record created successfully', 'success');
+                this.openNewRecord = false;
+                this.dispatchEvent(new RefreshEvent());
+                this.resetFields();
+            })
+            .catch(error => {
+                this.isLoading = false;
+                console.log('error=>', error);
+                this.showToast('Error', error.body.message, 'error');
+            });
     }
 
     resetFields() {
@@ -328,22 +340,22 @@ export default class BankFeedsList extends LightningElement {
         this.Inotes = '';
     }
 
-    handleSaveNew(){
+    handleSaveNew() {
         if (!this.validateFields()) {
-            return; 
+            return;
         }
         this.isLoading = true;
-        saveBankFeed({DateSet:this.DateSet, Inotes:this.Inotes, Description: this.Description, Refrence:this.Refrence, Receipt:this.Receipt ? parseFloat(this.Receipt) : null, Payment:this.Payment ? parseFloat(this.Payment) : null, recordId: this.recordId })
-        .then(result => {
-            this.isLoading = false;
-            this.showToast('Success', 'Bank feed record created successfully', 'success');
-            this.resetFields();
-        })
-        .catch(error => {
-            this.isLoading = false;
-            console.log('error=>',error);
-            this.showToast('Error', error.body.message, 'error');
-        });
+        saveBankFeed({ DateSet: this.DateSet, Inotes: this.Inotes, Description: this.Description, Refrence: this.Refrence, Receipt: this.Receipt ? parseFloat(this.Receipt) : null, Payment: this.Payment ? parseFloat(this.Payment) : null, recordId: this.recordId })
+            .then(result => {
+                this.isLoading = false;
+                this.showToast('Success', 'Bank feed record created successfully', 'success');
+                this.resetFields();
+            })
+            .catch(error => {
+                this.isLoading = false;
+                console.log('error=>', error);
+                this.showToast('Error', error.body.message, 'error');
+            });
     }
 
     showToast(mTitle, mMessage, mVariant) {
@@ -356,27 +368,27 @@ export default class BankFeedsList extends LightningElement {
         )
     }
 
-    DateChange(event){
+    DateChange(event) {
         this.DateSet = event.detail.value;
     }
 
-    DescChange(event){  
+    DescChange(event) {
         this.Description = event.detail.value;
     }
 
-    RefChange(event){
+    RefChange(event) {
         this.Refrence = event.detail.value;
     }
 
-    RecChange(event){
+    RecChange(event) {
         this.Receipt = event.detail.value;
     }
 
-    PayChange(event){
+    PayChange(event) {
         this.Payment = event.detail.value;
-    } 
+    }
 
-    NotesChange(event){
+    NotesChange(event) {
         this.Inotes = event.detail.value;
     }
 
@@ -403,6 +415,6 @@ export default class BankFeedsList extends LightningElement {
         }
         return allValid;
     }
-    
+
 
 }

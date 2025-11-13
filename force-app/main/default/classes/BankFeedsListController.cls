@@ -1,5 +1,5 @@
 public class BankFeedsListController {
-    
+
     @AuraEnabled
     public static void saveBankFeed(Date DateSet, String Inotes, String Description, String Refrence, Decimal Receipt, Decimal Payment, String recordId) {
         try{
@@ -9,14 +9,14 @@ public class BankFeedsListController {
             bf.Description__c = Description;
             bf.Reference__c = Refrence;
             bf.Receipt__c = Receipt;
-            bf.Payment__c = Payment;   
+            bf.Payment__c = Payment;
             bf.Bank__c = recordId;
             insert bf;
         } catch (Exception ex){
             throw new AuraHandledException(ex.getMessage());
         }
     }
-    
+
     @AuraEnabled(cacheable=true)
     public static List<Bank_Feed__c> getBankFeedList(Id recordId) {
         Date pastFiveDate = Date.today().AddDays(-5);
@@ -25,9 +25,9 @@ public class BankFeedsListController {
         String qryBuild = 'SELECT Id, Name, Date__c, Reference__c, Description__c, Receipt__c, Payment__c, Source__c, Status__c, Internal_Notes__c FROM Bank_Feed__c WHERE Bank__c = :recordId';
         qryBuild += ' AND Date__c >=:pastFiveDate AND Date__c <=:todayDate LIMIT 2000';
         bankFeed = Database.query(qryBuild);
-        return bankFeed;        
+        return bankFeed;
     }
-    
+
     @AuraEnabled(cacheable=true)
     public static List<Bank_Feed__c> getFilterData(Id recordId, String selectView, Date fromDate, Date toDate, String filReference, String filDescription, String Amount, String filINotes) {
         List<Bank_Feed__c> bankFeed = new List<Bank_Feed__c>();
@@ -45,11 +45,11 @@ public class BankFeedsListController {
         } if(String.isNotBlank(filDescription)) {
             qryBuild += ' AND Description__c Like' + '\'%' +filDescription + '%\'';
         } if (String.isNotBlank(Amount)) {
-            
+
             Amount = Amount.trim();
             String operator = '';
             Decimal amountValue;
-            
+
             if (Amount.startsWith('<') || Amount.startsWith('>') || Amount.startsWith('=')) {
                 operator = Amount.substring(0, 1);
                 amountValue = Decimal.valueOf(Amount.substring(1));
@@ -65,5 +65,14 @@ public class BankFeedsListController {
         System.debug('qryBuild=>'+qryBuild);
         bankFeed = Database.query(qryBuild);
         return bankFeed;
-    } 
+    }
+
+    @AuraEnabled
+    public static void updateStatementBalanceOnBankAccount(String bankId) {
+        try {
+            Database.executeBatch(new CalculateBankStatementBalanceBatch(bankId));
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
 }
