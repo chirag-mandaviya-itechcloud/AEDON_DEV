@@ -47,16 +47,6 @@ export default class CreateBankReceipt extends LightningElement {
         this.getExistingBankReceipts();
     }
 
-    showToast(mTitle, mMessage, mVariant) {
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: mTitle,
-                message: mMessage,
-                variant: mVariant
-            }),
-        )
-    }
-
     getExistingBankReceipts() {
         fetchExistingReceipts({ bankRecordId: this.recordId })
             .then(result => {
@@ -157,7 +147,7 @@ export default class CreateBankReceipt extends LightningElement {
         })
             .then(result => {
                 this.isModalLoading = false;
-                this.showToast('Success', 'Bank Receipt Created Successfully.', 'success');
+                // this.showToast('Success', 'Bank Receipt Created Successfully.', 'success');
                 this.openLineItemsPart = true;
                 this.bankHeaderCreated = true;
                 this.bankReceiptId = result[0].Id;
@@ -167,7 +157,7 @@ export default class CreateBankReceipt extends LightningElement {
                 this.isLoading = false;
                 this.isModalLoading = false;
                 this.bankReceiptId = '';
-                this.showToast('Error', 'Error Creating Bank Receipt: ' + error.body.message, 'error');
+                // this.showToast('Error', 'Error Creating Bank Receipt: ' + error.body.message, 'error');
                 console.error('Error saving Record:', error);
             });
     }
@@ -182,25 +172,35 @@ export default class CreateBankReceipt extends LightningElement {
 
     validateFields() {
         if (!this.accountSelected || this.accountSelected.trim() === '') {
-            this.showToast('Warning', 'Please fill the Account.', 'warning');
+            // this.showToast('Warning', 'Please fill the Account.', 'warning');
             return false;
         }
         if (!this.selectedInvoiceDate || this.selectedInvoiceDate.trim() === '') {
-            this.showToast('Warning', 'Please fill the Invoice Date.', 'warning');
+            // this.showToast('Warning', 'Please fill the Invoice Date.', 'warning');
             return false;
         }
         if (!this.selectedReference || this.selectedReference.trim() === '') {
-            this.showToast('Warning', 'Please fill the Reference.', 'warning');
+            // this.showToast('Warning', 'Please fill the Reference.', 'warning');
             return false;
         }
         if (!this.selectedCurrency || this.selectedCurrency.trim() === '') {
-            this.showToast('Warning', 'Please fill the Currency.', 'warning');
+            // this.showToast('Warning', 'Please fill the Currency.', 'warning');
             return false;
         }
         if (!this.exchangeRate || this.exchangeRate.trim() === '') {
-            this.showToast('Warning', 'Please fill the Exchange Rate.', 'warning');
+            // this.showToast('Warning', 'Please fill the Exchange Rate.', 'warning');
             return false;
         }
         return true;
     }
+
+    // showToast(mTitle, mMessage, mVariant) {
+    //     this.dispatchEvent(
+    //         new ShowToastEvent({
+    //             title: mTitle,
+    //             message: mMessage,
+    //             variant: mVariant
+    //         }),
+    //     )
+    // }
 }
