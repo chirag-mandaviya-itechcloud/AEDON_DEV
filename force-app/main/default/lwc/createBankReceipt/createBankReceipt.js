@@ -16,8 +16,9 @@ const columns = [
     },
     { label: 'Invoice Date', fieldName: 'formattedDate' },
     { label: 'Posting Status', fieldName: 's2p3__Posting_Status__c' },
-    { label: 'Gross Amount', fieldName: 's2p3__Gross_Amount__c' },
-    { label: 'Currency', fieldName: 'currencyName' }
+    { label: 'Customer Reference', fieldName: 's2p3__Customer_Reference__c' },
+    { label: 'Gross Amount', fieldName: 's2p3__Gross_Amount__c' }
+    // { label: 'Currency', fieldName: 'currencyName' }
 ];
 export default class CreateBankReceipt extends LightningElement {
     @api recordId;
@@ -39,6 +40,10 @@ export default class CreateBankReceipt extends LightningElement {
     @track isModalLoading = false;
     @track bankReceiptId = '';
     @track defaultCurrency = '';
+    @track pageNumber = 1;
+    @track pageSize = 200;
+    @track totalPages = 0;
+    @track singlePageBankReceiptData = [];
 
     columns = columns;
 
@@ -54,15 +59,54 @@ export default class CreateBankReceipt extends LightningElement {
                 this.allBankReceiptData = result.map(row => ({
                     ...row,
                     recordLink: '/' + row.Id,
-                    currencyName: row.s2p3__Currency__r ? row.s2p3__Currency__r.Name : '',
+                    // currencyName: row.s2p3__Currency__r ? row.s2p3__Currency__r.Name : '',
                     formattedDate: new Date(row.s2p3__Invoice_Date__c)
                         .toLocaleDateString('en-GB')
                         .replace(/\//g, '/'),
                 }));
 
+                if (this.allBankReceiptData.length > 0) {
+                    this.totalPages = Math.ceil(this.allBankReceiptData.length / this.pageSize);
+                    this.pageNumber = 1;
+                    this.setPageData();
+                } else {
+                    this.totalPages = 1;
+                    this.pageNumber = 1;
+                    this.singlePageBankReceiptData = [];
+                }
+
             }).catch(error => {
                 console.error('Error fetching bank account view:', error);
             });
+    }
+
+    setPageData() {
+        const start = (this.pageNumber - 1) * this.pageSize;
+        const end = this.pageNumber * this.pageSize;
+        this.singlePageBankReceiptData = this.allBankReceiptData.slice(start, end);
+    }
+
+    handleNext() {
+        if (this.pageNumber < this.totalPages) {
+            this.pageNumber++;
+            this.setPageData();
+        }
+    }
+
+    get isPrevDisabled() {
+        return this.pageNumber <= 1;
+    }
+
+    get isNextDisabled() {
+        return this.pageNumber >= this.totalPages;
+    }
+
+
+    handlePrev() {
+        if (this.pageNumber > 1) {
+            this.pageNumber--;
+            this.setPageData();
+        }
     }
 
     loadBankCurrencyData() {
@@ -78,7 +122,7 @@ export default class CreateBankReceipt extends LightningElement {
                     this.currencyId = result.bankAccountObj.s2p3__Currency__c;
                     this.selectedCurrency = result.bankAccountObj.s2p3__Currency__c;
                     this.defaultCurrency = result.bankAccountObj.s2p3__Currency__c;
-                    this.createLookupCondition();
+                    // this.createLookupCondition();
                 }
                 this.currencyISOCode = result.currencyISOCode;
             }).catch(error => {
@@ -87,9 +131,9 @@ export default class CreateBankReceipt extends LightningElement {
             });
     }
 
-    createLookupCondition() {
-        this.lookUpWhereCondition = ' AND s2p3__Account_Currency__c = ' + '\'' + this.currencyId + '\'';
-    }
+    // createLookupCondition() {
+    //     this.lookUpWhereCondition = ' AND s2p3__Account_Currency__c = ' + '\'' + this.currencyId + '\'';
+    // }
 
     handleAccountSelected(event) {
         if (event.detail.length == 0) {

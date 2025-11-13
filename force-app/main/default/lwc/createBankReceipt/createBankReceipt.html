@@ -26,8 +26,20 @@
                     </div>
                 </header>
             </div>
-            <lightning-datatable key-field="Id" data={allBankReceiptData} columns={columns} show-row-number-column
-                hide-checkbox-column="true"></lightning-datatable>
+            <lightning-datatable key-field="Id" data={singlePageBankReceiptData} columns={columns}
+                show-row-number-column hide-checkbox-column="true"></lightning-datatable>
+            <div class="slds-p-vertical_small">
+                <div class="slds-clearfix">
+                    <div class="slds-float_right">
+                        <lightning-button label="Prev" title="Previous" icon-name="utility:chevronleft"
+                            onclick={handlePrev} disabled={isPrevDisabled} variant="brand"> </lightning-button>
+                        <span style="padding: 0px 5px;"> Page {pageNumber} of {totalPages} </span>
+                        <lightning-button label="Next" title="Previous" icon-name="utility:chevronright"
+                            onclick={handleNext} disabled={isNextDisabled} variant="brand" icon-position="right">
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
         </div>
         <template if:true={openNewRecord}>
             <template if:true={isModalLoading}>
@@ -88,9 +100,11 @@
 
                             <!-- Input Part -->
                             <div class="slds-col slds-size_3-of-12 slds-p-left_x-small" style="margin-top: -17px;">
-                                <c-lookup placeholder="Search..." where-condition={lookUpWhereCondition}
+                                <!-- <c-lookup placeholder="Search..." where-condition={lookUpWhereCondition}
                                     object-api-name="Account" field-api-name="Name" icon-name="standard:account"
-                                    onselect={handleAccountSelected}></c-lookup>
+                                    onselect={handleAccountSelected}></c-lookup> -->
+                                <c-lookup placeholder="Search..." object-api-name="Account" field-api-name="Name"
+                                    icon-name="standard:account" onselect={handleAccountSelected}></c-lookup>
                             </div>
                             <div class="slds-col slds-size_2-of-12" style="padding-left: 10px;">
                                 <lightning-input type="date" name="dateinput" label="Date" value={selectedInvoiceDate}
