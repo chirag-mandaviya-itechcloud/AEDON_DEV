@@ -1,0 +1,115 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="spinner-overlay">
+            <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+        </div>
+    </template>
+
+    <article class="slds-card">
+        <div class="custom-card-floating">
+            <div class="slds-card__header slds-grid ">
+                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                    <div class="slds-media__body">
+                        <div class="slds-p-top_small">
+                            <h2 class="slds-card__header-title">
+                                <div class="slds-p-left_x-small">
+                                    <lightning-icon icon-name="custom:custom19" title="custom19" size="small"></lightning-icon>
+                                </div>
+                                <div class="slds-p-left_x-small">Bank Statement Lines</div>
+                            </h2>
+                        </div>
+                    </div>
+                </header>
+            </div>
+
+            <div class="slds-card__body slds-card__body_inner">
+                <div class="slds-p-horizontal_x-small">
+                     <div class="slds-grid slds-wrap">
+                        <div class="slds-col slds-size_1-of-12">
+                            <lightning-select value={selectView} label="List View" title="selectView" options={viewOptions} onchange={handleViewChange} class="slds-m-left_x-small"></lightning-select>
+                        </div>
+                        <div class="slds-col slds-size_1-of-12">
+                            <lightning-input type="date" name="From Date" label="From Date" title="fromDate" value={fromDate} onchange={handleFromDateChange} class="slds-m-left_x-small"></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-12">
+                            <lightning-input type="date" name="To Date" label="To Date" title="toDate" value={toDate} onchange={handleToDateChange} class="slds-m-left_x-small"></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-12">
+                            <lightning-input type="text" name="Reference" label="Reference" title="filReference" value={filReference} onchange={handlefilRefChange} class="slds-m-left_x-small"></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12">
+                            <lightning-input type="text" name="Description" label="Description" title="filDescription" value={filDescription} onchange={handlefilDescChange} class="slds-m-left_x-small"></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12">
+                            <lightning-input type="text" name="Internal Notes" label="Internal Notes" title="filINotes" value={filINotes} onchange={handlefilINotesChange} class="slds-m-left_x-small"></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-12">
+                            <lightning-input type="text" name="Amount" label="Amount" title="Amount" value={MinAmount} onchange={handleAmountChange} class="slds-m-left_x-small"></lightning-input>
+                        </div>
+                        <div class="slds-size_3-of-12 slds-p-top_large">
+                            <lightning-button variant="neutral" label="Filter" title="Filter" onclick={handleFilterClick} class="slds-m-left_x-small"></lightning-button>
+                            <lightning-button variant="neutral" label="New" title="New" onclick={openModal} class="slds-m-left_x-small"></lightning-button>
+                            <lightning-button variant="neutral" label="Import" title="Import" onclick={handleImport} class="slds-m-left_x-small"></lightning-button>
+                            <lightning-button variant="neutral" label="Export" title="Export" onclick={handleExport} class="slds-m-left_x-small"></lightning-button>
+                        </div>
+                    </div>   
+
+                    <div class="slds-p-top_x-small">
+                        <lightning-datatable
+                            key-field="Id"
+                            data={bankFeedData}
+                            columns={columns}
+                            show-row-number-column
+                            hide-checkbox-column="true"
+                        ></lightning-datatable>
+                    </div>
+
+                    <div class="slds-p-vertical_small">
+                        <div class="slds-clearfix">
+                            <div class="slds-float_right">   
+                                <lightning-button label="Prev" title="Previous" icon-name="utility:chevronleft" onclick={handlePrev} disabled={isPrevDisabled} variant="brand"> </lightning-button>
+                                <span>  Page {pageNumber} of {totalPages}  </span>
+                                <lightning-button label="Next" title="Previous" icon-name="utility:chevronright" onclick={handleNext} disabled={isNextDisabled} variant="brand" icon-position="right"> </lightning-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template if:true={openNewRecord}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open" aria-modal="true">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-text-heading_medium heading">Create New Bank Feed</h2>
+                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeModal}>
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                    </header>
+
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-input type="date" name="Date" label="Date" value={DateSet} onchange={DateChange} required></lightning-input>
+                        <lightning-input type="text" label="Description" value={Description} onchange={DescChange} required></lightning-input>
+                        <lightning-input type="text" label="Reference" value={Refrence} onchange={RefChange} required></lightning-input>
+                        <lightning-input type="number" label="Receipt" value={Receipt} onchange={RecChange} step="0.01"></lightning-input>
+                        <lightning-input type="number" label="Payment" value={Payment} onchange={PayChange} step="0.01"></lightning-input>
+                        <lightning-input type="text" label="Internal Notes" value={Inotes} onchange={NotesChange}></lightning-input>
+                    </div>
+
+                    <footer class="slds-modal__footer">
+                        <lightning-button variant="Neutral" label="Save & New" title="Save & New" onclick={handleSaveNew} class="slds-m-left_x-small"></lightning-button>
+                        <lightning-button variant="brand" label="Save" title="Save" onclick={handleSave} class="slds-m-left_x-small"></lightning-button>
+                    </footer>
+                </div>
+            </section>
+
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <template if:true={openImport}>
+                <c-bank-feed-uploader onclose={handleCloseUploader} record-id={recordId}></c-bank-feed-uploader>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </article>
+</template>
