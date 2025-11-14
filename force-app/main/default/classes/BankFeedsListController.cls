@@ -66,13 +66,4 @@ public class BankFeedsListController {
         bankFeed = Database.query(qryBuild);
         return bankFeed;
     }
-
-    @AuraEnabled
-    public static void updateStatementBalanceOnBankAccount(String bankId) {
-        try {
-            Database.executeBatch(new CalculateBankStatementBalanceBatch(bankId));
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
-    }
 }

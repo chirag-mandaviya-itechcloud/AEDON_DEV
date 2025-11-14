@@ -2,7 +2,6 @@ import { LightningElement, track, api } from 'lwc';
 import saveBankFeed from "@salesforce/apex/BankFeedsListController.saveBankFeed";
 import getBankFeedList from "@salesforce/apex/BankFeedsListController.getBankFeedList";
 import getFilterData from "@salesforce/apex/BankFeedsListController.getFilterData";
-import updateStatementBalanceOnBankAccount from "@salesforce/apex/BankFeedsListController.updateStatementBalanceOnBankAccount";
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { RefreshEvent } from 'lightning/refresh';
 
@@ -89,18 +88,8 @@ export default class BankFeedsList extends LightningElement {
         this.defFilter = this.filteredObject;
 
         this.getBankFeedData();
-        this.updateStatementBalance();
     }
 
-    updateStatementBalance() {
-        updateStatementBalanceOnBankAccount({ bankId: this.recordId })
-            .then(() => {
-                console.log('Bank statement balance update initiated.');
-            })
-            .catch(error => {
-                console.error('Error updating bank statement balance:', error);
-            });
-    }
 
     handleViewChange(event) {
         this.selectView = event.detail.value;
