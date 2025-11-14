@@ -14,8 +14,8 @@ public class CreateBankReceiptController {
 			bankReceipt.To_Account__c = accountId;
 			bankReceipt.Invoice_Date__c = invoiceDate;
 			bankReceipt.Customer_Reference__c = customerReference;
-			bankReceipt.Currency__c = currencyId;
-			bankReceipt.Currency_Exchange_Rate__c = exchangeRate;
+			bankReceipt.Transaction_Currency__c = currencyId;
+			bankReceipt.Transaction_Currency_Exchange_Rate__c = exchangeRate;
 			bankReceipt.Bank_Account__c = bankRecordId;
 			bankReceipt.Company__c = UtilsController.getCompanyInformation().Id;
 			List<sObject> resultList = DBOpsUtils.s2p3Insert(new List<sObject>{ bankReceipt });
