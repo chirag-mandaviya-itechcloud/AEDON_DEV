@@ -1,8 +1,12 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import fetchBankAccountViewNew from "@salesforce/apex/CreateMatchingRuleController.fetchBankAccountViewNew";
 import fetchExistingReceipts from '@salesforce/apex/CreateBankReceiptController.fetchExistingReceipts';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import saveReceiptHeaderDetails from '@salesforce/apex/CreateBankReceiptController.saveReceiptHeaderDetails';
+import handlePostOnBankRecord from '@salesforce/apex/CreateBankReceiptController.handlePostOnBankRecord';
+import { getRecord } from 'lightning/uiRecordApi';
+
+import CURRENCY_FIELD from '@salesforce/schema/Bank__c.Currency__c';
 
 const columns = [
     {
@@ -47,15 +51,27 @@ export default class CreateBankReceipt extends LightningElement {
 
     columns = columns;
 
+    @wire(getRecord, { recordId: '$recordId', fields: [CURRENCY_FIELD] })
+    bankAccountObjWire({ error, data }) {
+        if (data) {
+            this.selectedCurrency = data.fields.s2p3__Currency__c.value;
+            this.defaultCurrency = data.fields.s2p3__Currency__c.value;
+        }
+        if (error) {
+            console.error('Error fetching bank account record:', error);
+        }
+    }
+
     connectedCallback() {
         this.isLoading = true;
-        this.loadBankCurrencyData();
+        // this.loadBankCurrencyData();
         this.getExistingBankReceipts();
     }
 
     getExistingBankReceipts() {
         fetchExistingReceipts({ bankRecordId: this.recordId })
             .then(result => {
+                this.isLoading = false;
                 this.allBankReceiptData = result.map(row => ({
                     ...row,
                     recordLink: '/' + row.Id,
@@ -109,27 +125,27 @@ export default class CreateBankReceipt extends LightningElement {
         }
     }
 
-    loadBankCurrencyData() {
-        fetchBankAccountViewNew({ bankRecordId: this.recordId })
-            .then(result => {
-                this.isLoading = false;
-                this.bankAccountObj = result.bankAccountObj;
+    // loadBankCurrencyData() {
+    //     fetchBankAccountViewNew({ bankRecordId: this.recordId })
+    //         .then(result => {
+    //             this.isLoading = false;
+    //             this.bankAccountObj = result.bankAccountObj;
 
-                if (!result.bankAccountObj.s2p3__Currency__r.s2p3__IsBaseCurrency__c) {
-                    this.isNotBaseCurrency = true;
-                }
-                if (result.bankAccountObj.s2p3__Currency__c != null && result.bankAccountObj.s2p3__Currency__c != undefined && result.bankAccountObj.s2p3__Currency__c != '') {
-                    this.currencyId = result.bankAccountObj.s2p3__Currency__c;
-                    this.selectedCurrency = result.bankAccountObj.s2p3__Currency__c;
-                    this.defaultCurrency = result.bankAccountObj.s2p3__Currency__c;
-                    // this.createLookupCondition();
-                }
-                this.currencyISOCode = result.currencyISOCode;
-            }).catch(error => {
-                this.isLoading = false;
-                console.error('Error fetching bank account view:', error);
-            });
-    }
+    //             if (!result.bankAccountObj.s2p3__Currency__r.s2p3__IsBaseCurrency__c) {
+    //                 this.isNotBaseCurrency = true;
+    //             }
+    //             if (result.bankAccountObj.s2p3__Currency__c != null && result.bankAccountObj.s2p3__Currency__c != undefined && result.bankAccountObj.s2p3__Currency__c != '') {
+    //                 this.currencyId = result.bankAccountObj.s2p3__Currency__c;
+    //                 this.selectedCurrency = result.bankAccountObj.s2p3__Currency__c;
+    //                 this.defaultCurrency = result.bankAccountObj.s2p3__Currency__c;
+    //                 // this.createLookupCondition();
+    //             }
+    //             this.currencyISOCode = result.currencyISOCode;
+    //         }).catch(error => {
+    //             this.isLoading = false;
+    //             console.error('Error fetching bank account view:', error);
+    //         });
+    // }
 
     // createLookupCondition() {
     //     this.lookUpWhereCondition = ' AND s2p3__Account_Currency__c = ' + '\'' + this.currencyId + '\'';
@@ -179,6 +195,19 @@ export default class CreateBankReceipt extends LightningElement {
 
     get divClass() {
         return this.bankHeaderCreated ? '' : 'disabled-div';
+    }
+
+    handlePost() {
+        console.log('in handle post ');
+        console.log('this.bankReceiptId >>> in post : ', this.bankReceiptId);
+        handlePostOnBankRecord({ bankReceiptHeaderId: this.bankReceiptId })
+            .then(result => {
+                window.location.reload();
+            })
+            .catch(error => {
+                this.showToast('Error', 'Error Posting Bank Receipt: ' + error.body.message, 'error');
+                console.error('Error:', error);
+            });
     }
 
     handleSave() {
