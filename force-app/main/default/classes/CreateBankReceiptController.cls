@@ -26,4 +26,25 @@ public class CreateBankReceiptController {
             throw new AuraHandledException(e.getMessage());
 		}
 	}
+
+    @AuraEnabled
+    public static void handlePostOnBankRecord(String bankReceiptHeaderId) {
+        List<TransactionPostingService.RequestParams> paramList = new List<TransactionPostingService.RequestParams>();
+        TransactionPostingService.RequestParams req = new TransactionPostingService.RequestParams();
+
+		List<Bank_Receipt_Transaction__c> bankReceiptTransactions = [SELECT Id FROM Bank_Receipt_Transaction__c WHERE Bank_Receipt_Header__c = :bankReceiptHeaderId WITH SECURITY_ENFORCED];
+
+		if(bankReceiptTransactions.isEmpty()) {
+			throw new AuraHandledException('Please Add Line Items before Posting the Bank Receipt.');
+		}
+
+        req.recordIds = new List<Id>{bankReceiptHeaderId};
+        req.masterObjectName = 'Bank_Receipt_Header__c';
+        req.detailObjectName = 'Bank_Receipt_Transaction__c';
+        req.fieldSetNameHeader = 'Ledger_Entry_Postings';
+        req.fieldSetNameLines = 'Ledger_Entry_Lines';
+        req.transUID = 'BR';
+        paramList.add(req);
+        TransactionPostingService.postSalesInvoice(paramList);
+	}
 }
