@@ -200,11 +200,14 @@ export default class CreateBankReceipt extends LightningElement {
     handlePost() {
         console.log('in handle post ');
         console.log('this.bankReceiptId >>> in post : ', this.bankReceiptId);
+        this.isModalLoading = true;
         handlePostOnBankRecord({ bankReceiptHeaderId: this.bankReceiptId })
             .then(result => {
                 window.location.reload();
+                this.isModalLoading = false;
             })
             .catch(error => {
+                this.isModalLoading = false;
                 this.showToast('Error', 'Error Posting Bank Receipt: ' + error.body.message, 'error');
                 console.error('Error:', error);
             });

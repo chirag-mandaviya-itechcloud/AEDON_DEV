@@ -2,7 +2,7 @@ public class CreateBankReceiptController {
 	@AuraEnabled
 	public static List<Bank_Receipt_Header__c> fetchExistingReceipts(Id bankRecordId){
 		List<Bank_Receipt_Header__c> bankReceipts = new List<Bank_Receipt_Header__c>();
-		String qryBuild = ' SELECT Id, Name, Invoice_Date__c, Customer_Reference__c, Currency__r.Name, Gross_Amount__c FROM Bank_Receipt_Header__c WHERE Bank_Account__c = :bankRecordId WITH SECURITY_ENFORCED';
+		String qryBuild = ' SELECT Id, Name, Invoice_Date__c, Customer_Reference__c, Currency__r.Name, Gross_Amount__c, Posting_Status__c FROM Bank_Receipt_Header__c WHERE Bank_Account__c = :bankRecordId WITH SECURITY_ENFORCED';
 		bankReceipts = Database.query(qryBuild);
 		return bankReceipts;
 	}
@@ -37,12 +37,15 @@ public class CreateBankReceiptController {
 		if(bankReceiptTransactions.isEmpty()) {
 			throw new AuraHandledException('Please Add Line Items before Posting the Bank Receipt.');
 		}
+        
+        String namespace = UtilsController.getNameSpace();
 
-        req.recordIds = new List<Id>{bankReceiptHeaderId};
+        //req.recordIds = new List<Id>{bankReceiptHeaderId};
+        req.recordIdSingle = bankReceiptHeaderId;
         req.masterObjectName = 'Bank_Receipt_Header__c';
         req.detailObjectName = 'Bank_Receipt_Transaction__c';
-        req.fieldSetNameHeader = 'Ledger_Entry_Postings';
-        req.fieldSetNameLines = 'Ledger_Entry_Lines';
+        req.fieldSetNameHeader = namespace + 'Ledger_Entry_Postings';
+        req.fieldSetNameLines = namespace + 'Ledger_Entry_Lines';
         req.transUID = 'BR';
         paramList.add(req);
         TransactionPostingService.postSalesInvoice(paramList);
