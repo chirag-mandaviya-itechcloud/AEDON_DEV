@@ -298,9 +298,12 @@ public with sharing class BankReconciliationController {
             spoaLine.Quantity__c = 1;
             spoaLine.Sub_Ledger__c = bank.Sub_Ledger__c;
             spoaLine.Tax_Group__c = bank.Tax_Group_for_Payment_on_Account__c;
+            spoaLine.Net_Amount__c = unitPrice;
+            spoaLine.Gross_Amount__c = unitPrice;
             spoaLine.Sales_POA__c = recordsToInsert[0].Id;
             List<SObject> recordsToInsertline = new List<SObject>{ spoaLine };
             recordsToInsertline = DBOpsUtils.s2p3Insert(recordsToInsertline);
+            handlePostOnSPOARecord(recordsToInsert[0].Id);
         } catch (Exception ex) {
             throw new AuraHandledException(ex.getMessage());
         }
@@ -330,6 +333,7 @@ public with sharing class BankReconciliationController {
             brHeader.Customer_Reference__c = (reference != null && reference.length() > 25) ? reference.substring(0, 25) : reference;
             brHeader.Transaction_Currency__c = bankRecord[0].Currency__c;
             brHeader.Transaction_Currency_Exchange_Rate__c = getExchangeRate(bankId);
+            brHeader.Bank_Account__c = bankId;
             brHeader.Company__c = UtilsController.getCompanyInformation().Id;
             List<SObject> recordsToInsert = new List<SObject>{ brHeader };
             recordsToInsert = DBOpsUtils.s2p3Insert(recordsToInsert);
@@ -339,6 +343,8 @@ public with sharing class BankReconciliationController {
             brTransaction.Unit_Price__c = unitPrice;
             brTransaction.Sub_Ledger__c = bankRecord[0].Subledger_for_FX_Gain_Loss__c;
             brTransaction.Tax_Group__c = bankRecord[0].Tax_Group_for_FX_Gain_Loss__c;
+            brTransaction.Net_Amount__c = unitPrice;
+            brTransaction.Gross_Amount__c = unitPrice;
             brTransaction.Bank_Receipt_Header__c = recordsToInsert[0].Id;
             List<SObject> recordsToInsertline = new List<SObject>{ brTransaction };
             recordsToInsertline = DBOpsUtils.s2p3Insert(recordsToInsertline);
@@ -348,4 +354,21 @@ public with sharing class BankReconciliationController {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
+    public static void handlePostOnSPOARecord(String spoaRecordId) {
+        List<TransactionPostingService.RequestParams> paramList = new List<TransactionPostingService.RequestParams>();
+        TransactionPostingService.RequestParams req = new TransactionPostingService.RequestParams();
+
+        String namespace = UtilsController.getNameSpace();
+
+        req.recordIdSingle = spoaRecordId;
+        req.masterObjectName = 'Sales_POA__c';
+        req.detailObjectName = 'Sales_POA_Lines__c';
+        req.fieldSetNameHeader = namespace + 'Ledger_Entry_Postings';
+        req.fieldSetNameLines = namespace + 'Ledger_Entry_Lines';
+        req.transUID = 'SA';
+        paramList.add(req);
+        TransactionPostingService.postSalesInvoice(paramList);
+	}
+
 }

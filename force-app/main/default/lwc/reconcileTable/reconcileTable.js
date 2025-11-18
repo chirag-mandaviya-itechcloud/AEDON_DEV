@@ -613,6 +613,7 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
             .then(data => {
                 this.modalkaspinner = false;
                 this.showToast('Success', 'Sales payment created and posted successfully', 'success');
+                window.location.reload();
             })
             .catch(error => {
                 this.modalkaspinner = false;
@@ -625,12 +626,13 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
         var reference = this.bankFeedDetails.s2p3__Reference__c + ' ' + this.bankFeedDetails.s2p3__Description__c;
         const parts = this.bankFeedDetails.formattedDate.split('/');
         var dateSelected = `${parts[2]}-${parts[1]}-${parts[0]}`;
-        var unitPrice = this.differenceAmount;
+        var unitPrice = Math.abs(this.differenceAmount);
 
         createBRFXGainLoss({ bankId: this.recordId, reference: reference, selectedDate: dateSelected, unitPrice: unitPrice })
             .then(data => {
                 this.modalkaspinner = false;
                 this.showToast('Success', 'FX Gain/Loss created and posted successfully', 'success');
+                window.location.reload();
             })
             .catch(error => {
                 this.modalkaspinner = false;
