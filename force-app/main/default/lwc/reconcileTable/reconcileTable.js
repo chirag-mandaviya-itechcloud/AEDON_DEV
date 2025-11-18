@@ -7,6 +7,7 @@ import autoMatchTransactions from '@salesforce/apex/BankReconciliationController
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
+import createBRFXGainLoss from '@salesforce/apex/BankReconciliationController.createBRFXGainLoss';
 
 export default class ReconcileTable extends NavigationMixin(LightningElement) {
     @api recordId;
@@ -21,7 +22,9 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
     @track bankFeedDetails = {};
     @track totalSelectedAmount = 0;
     wiredBankFeeds;
-    @track differenceAmount=0;
+    @track differenceAmount = 0;
+    @track modalkaspinner = false;
+
 
     @track allBankFeeds = [];
     @track currentPage = 1;
@@ -63,8 +66,8 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
     transactionTypeOption = [
         { label: 'Cash In', value: 'Cash In' },
         { label: 'Receipt', value: 'Receipt' },
-        {label: 'Cash Out', value: 'Cash Out'},
-        {label: 'Payment', value: 'Payment'}
+        { label: 'Cash Out', value: 'Cash Out' },
+        { label: 'Payment', value: 'Payment' }
     ]
 
     connectedCallback() {
@@ -93,27 +96,27 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
 
     fetchBankFeeds() {
         this.isLoading = true;
-        getBankFeeds({ bankId: this.recordId, listView : this.selectView , fromDate: this.fromDate, toDate: this.toDate, filReference : this.filReference, description:this.filDescription, amount : this.MinAmount})
-        .then((data) => {
-            this.allBankFeeds = data.map(feed => ({
-                ...feed,
-                isDisabled: !feed.s2p3__Auto_Match__c,
-                formattedDate: new Date(feed.s2p3__Date__c)
-                    .toLocaleDateString('en-GB')
-                    .replace(/\//g, '/'),
-            }));
-            this.totalPages = Math.ceil(this.allBankFeeds.length / this.pageSize);
-            this.currentPage = 1;
-            this.setPageData();
-        })
-        .catch((error) => {
-            console.error('Error fetching bank feeds:', error);
-            //this.showToast('Error', 'Error fetching bank feeds.', 'error');
-        })
-        .finally(() => {
-            this.isLoading = false;
-        });
-    }    
+        getBankFeeds({ bankId: this.recordId, listView: this.selectView, fromDate: this.fromDate, toDate: this.toDate, filReference: this.filReference, description: this.filDescription, amount: this.MinAmount })
+            .then((data) => {
+                this.allBankFeeds = data.map(feed => ({
+                    ...feed,
+                    isDisabled: !feed.s2p3__Auto_Match__c,
+                    formattedDate: new Date(feed.s2p3__Date__c)
+                        .toLocaleDateString('en-GB')
+                        .replace(/\//g, '/'),
+                }));
+                this.totalPages = Math.ceil(this.allBankFeeds.length / this.pageSize);
+                this.currentPage = 1;
+                this.setPageData();
+            })
+            .catch((error) => {
+                console.error('Error fetching bank feeds:', error);
+                //this.showToast('Error', 'Error fetching bank feeds.', 'error');
+            })
+            .finally(() => {
+                this.isLoading = false;
+            });
+    }
 
     setPageData() {
         const start = (this.currentPage - 1) * this.pageSize;
@@ -180,7 +183,7 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
         this.fetchMatching();
     }
 
-    fetchMatching() {   
+    fetchMatching() {
         const selectedBankFeed = this.bankFeeds.find(feed => feed.Id === this.internalrecordId);
         if (!selectedBankFeed) return;
 
@@ -206,36 +209,36 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
             reference: this.reference,
             amount: this.Amount
         })
-        .then(data => {
-            this.allMatchingTransactions = data.map(transaction => ({
-                ...transaction,
-                 formattedDate: new Date(transaction.s2p3__Date__c)
-                    .toLocaleDateString('en-GB')
-                    .replace(/\//g, '/'),
-                amount: selectedBankFeed.s2p3__Receipt__c > 0
-                    ? transaction.s2p3__Movement__c
-                    : transaction.s2p3__Reverse_Movement__c,
-                accountName: transaction.s2p3__Account__c != undefined &&  transaction.s2p3__Account__c != '' ? 
-                            transaction.s2p3__Account__r.Name : ''
-            }));
+            .then(data => {
+                this.allMatchingTransactions = data.map(transaction => ({
+                    ...transaction,
+                    formattedDate: new Date(transaction.s2p3__Date__c)
+                        .toLocaleDateString('en-GB')
+                        .replace(/\//g, '/'),
+                    amount: selectedBankFeed.s2p3__Receipt__c > 0
+                        ? transaction.s2p3__Movement__c
+                        : transaction.s2p3__Reverse_Movement__c,
+                    accountName: transaction.s2p3__Account__c != undefined && transaction.s2p3__Account__c != '' ?
+                        transaction.s2p3__Account__r.Name : ''
+                }));
 
-            // Initialize pagination
-            this.internalTotalRecords = this.allMatchingTransactions.length;
-            this.internalTotalPages = Math.ceil(this.internalTotalRecords / this.internalPageSize);
-            this.internalPageNumber = 1;
+                // Initialize pagination
+                this.internalTotalRecords = this.allMatchingTransactions.length;
+                this.internalTotalPages = Math.ceil(this.internalTotalRecords / this.internalPageSize);
+                this.internalPageNumber = 1;
 
-            this.updatePaginatedData();
-            this.isModalOpen = true;
-        })
-        .catch(error => {
-            console.error('Error fetching matching transactions:', error);
-            this.matchingTransactions = [];
-        })
-        .finally(() => {
-            this.isMatching = false;
-        });
+                this.updatePaginatedData();
+                this.isModalOpen = true;
+            })
+            .catch(error => {
+                console.error('Error fetching matching transactions:', error);
+                this.matchingTransactions = [];
+            })
+            .finally(() => {
+                this.isMatching = false;
+            });
     }
-    
+
     updatePaginatedData() {
         const startIndex = (this.internalPageNumber - 1) * this.internalPageSize;
         const endIndex = startIndex + this.internalPageSize;
@@ -274,7 +277,7 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
         try {
             const recordId = event.target.dataset.id;
             const isChecked = event.target.checked;
-            const isTransaction = this.isModalOpen; 
+            const isTransaction = this.isModalOpen;
 
             if (isTransaction) {
                 if (!this.selectedTransactionIds) {
@@ -339,7 +342,7 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
         this.internalTotalPages = 0;
         this.internalPageNumber = 1;
 
-    
+
         this.internalAccount = null;
         this.transactionReference = null;
         this.transactionName = null;
@@ -349,11 +352,11 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
 
 
     handleReconcile() {
-        if(this.selectedButton == 'POA') {
+        if (this.selectedButton == 'POA') {
             this.handlePOAClicked();
-        }
-
-        else {
+        } else if (this.selectedButton == 'FX') {
+            this.handleFXClicked();
+        } else {
             if (this.selectedBankFeedIds.size === 0) {
                 this.showToast('Error', 'Please select at least one Ledger Entry to reconcile.', 'error');
                 return;
@@ -385,11 +388,11 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
         const amountMismatch = Math.abs(this.totalSelectedAmount - this.bankFeedDetails.amount) > 0.01;
 
         const diffNotZeroButButtonsUnlocked = this.differenceAmount !== 0 && this.selectedButton != null
-            
-        if(this.differenceAmount != 0) {
+
+        if (this.differenceAmount != 0) {
             return !diffNotZeroButButtonsUnlocked;
         } else {
-            return  amountMismatch;
+            return amountMismatch;
         }
     }
 
@@ -471,26 +474,26 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
                 this.isLoading = false;
             });
     }*/
-   
+
     bulkReconcile() {
         console.log('Selected Bank Feed IDs:', JSON.stringify(Array.from(this.selectedBankFeedIds)));
-    
+
         const ledgerEntryMap = new Map();
-    
+
         this.bankFeeds.forEach(feed => {
             if (this.selectedBankFeedIds.has(feed.Id)) {
                 // Allow Ledger Entry ID to be null (if not matched)
                 ledgerEntryMap.set(feed.Id, feed.s2p3__Matched_Ledger_Entry__c || null);
             }
         });
-    
+
         if (ledgerEntryMap.size === 0) {
             this.showToast('Error', 'No transactions selected for reconciliation.', 'error');
             return;
         }
-    
+
         this.isLoading = true;
-    
+
         // Call Batch Apex
         reconcileTransactions({ ledgerEntryMap: Object.fromEntries(ledgerEntryMap) })
             .then(() => {
@@ -504,8 +507,8 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
                 this.isLoading = false;
             });
     }
-            
-            
+
+
     refreshData() {
         fetchUnreconciledBankFeeds({ filters: this.filters })
             .then(data => {
@@ -548,11 +551,11 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
         this.filDescription = event.detail.value;
     }
 
-    handleAmountChange(event) {    
+    handleAmountChange(event) {
         this.MinAmount = event.detail.value;
     }
 
-    filterInternalData(event){
+    filterInternalData(event) {
         this.fetchMatching();
     }
 
@@ -562,7 +565,7 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
         }
         if (event.detail.length > 0 && event.detail[0].id != undefined && event.detail[0].id != null) {
             this.internalAccount = event.detail[0].id;
-            
+
         }
     }
 
@@ -582,7 +585,7 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
         this.reference = event.detail.value;
     }
 
-     handleAmountChange(event) {
+    handleAmountChange(event) {
         this.Amount = event.detail.value;
     }
 
@@ -596,22 +599,44 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
     }
 
     handlePOAClicked() {
-        if(this.internalAccount == undefined || this.internalAccount == '') {
+        if (this.internalAccount == undefined || this.internalAccount == '') {
             this.showToast('Error', 'Please select Account', 'error');
             return;
         }
-        var reference = this.bankFeedDetails.s2p3__Reference__c +' '+this.bankFeedDetails.s2p3__Description__c;
+        this.modalkaspinner = true;
+        var reference = this.bankFeedDetails.s2p3__Reference__c + ' ' + this.bankFeedDetails.s2p3__Description__c;
         var accountChoosen = this.internalAccount;
         const parts = this.bankFeedDetails.formattedDate.split('/');
         var dateSelected = `${parts[2]}-${parts[1]}-${parts[0]}`;
         var unitPrice = this.differenceAmount;
-        createSPOA({bankId : this.recordId,reference :reference,account:accountChoosen, selectedDate:dateSelected, unitPrice:unitPrice})
-        .then(data => {
-             this.showToast('Success','Sales payment created and posted successfully', 'success');
-        })
-        .catch(error => {
-            this.showToast('Error', error.body.message, 'error');
-        })
+        createSPOA({ bankId: this.recordId, reference: reference, account: accountChoosen, selectedDate: dateSelected, unitPrice: unitPrice })
+            .then(data => {
+                this.modalkaspinner = false;
+                this.showToast('Success', 'Sales payment created and posted successfully', 'success');
+            })
+            .catch(error => {
+                this.modalkaspinner = false;
+                this.showToast('Error', error.body.message, 'error');
+            })
+    }
+
+    handleFXClicked() {
+        this.modalkaspinner = true;
+        var reference = this.bankFeedDetails.s2p3__Reference__c + ' ' + this.bankFeedDetails.s2p3__Description__c;
+        const parts = this.bankFeedDetails.formattedDate.split('/');
+        var dateSelected = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        var unitPrice = this.differenceAmount;
+
+        createBRFXGainLoss({ bankId: this.recordId, reference: reference, selectedDate: dateSelected, unitPrice: unitPrice })
+            .then(data => {
+                this.modalkaspinner = false;
+                this.showToast('Success', 'FX Gain/Loss created and posted successfully', 'success');
+            })
+            .catch(error => {
+                this.modalkaspinner = false;
+                this.showToast('Error', error.body.message, 'error');
+            });
+
     }
 
     get isPaymentOnAccountDisabled() {
@@ -631,12 +656,12 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
     }
 
     isButtonDisabled(buttonKey) {
-        if(this.differenceAmount == 0) {
+        if (this.differenceAmount == 0) {
             this.selectedButton = null;
             this.buttonVariant('No one');
             return true;
         }
-        if(this.selectedTransactionIds.size == 0) {
+        if (this.selectedTransactionIds.size == 0) {
             return true;
         }
         if (this.selectedButton) {

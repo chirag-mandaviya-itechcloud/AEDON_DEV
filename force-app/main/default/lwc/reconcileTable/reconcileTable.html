@@ -1,4 +1,5 @@
 <template>
+
     <lightning-card title="Unreconciled Bank Statement" icon-name="standard:account">
         <div class="slds-grid slds-wrap slds-var-m-around_small">
             <div class="slds-col slds-size_1-of-12">
@@ -33,7 +34,7 @@
         </div>
 
         <template if:true={isLoading}>
-            <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+            <lightning-spinner alternative-text="Processing..." size="medium" ></lightning-spinner>
         </template>
         
         <div class="slds-scrollable_x table-container slds-m-top_medium">
@@ -115,6 +116,9 @@
         <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open custom-modal-width">
             <div class="slds-modal__container">
                 
+                <template if:true={modalkaspinner}>
+                    <lightning-spinner alternative-text="Processing..." size="medium"></lightning-spinner>
+                </template>
                 <!-- Modal Header -->
                 <header class="slds-modal__header">
                     <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={closeModal}>
