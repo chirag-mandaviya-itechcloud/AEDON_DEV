@@ -42,12 +42,8 @@
             </div>
         </div>
         <template if:true={openNewRecord}>
-            <template if:true={isModalLoading}>
-                <div class="spinner-overlay">
-                    <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
-                </div>
-            </template>
-            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open modal-level-1" aria-modal="true">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open modal-level-1 " aria-modal="true">
+
                 <div class="slds-modal__container parentContainerCLass" style="max-width: 100%;width: 75%;">
                     <header class="slds-modal__header">
                         <h2 class="slds-text-heading_medium heading">Create New Bank Receipt</h2>
@@ -58,18 +54,24 @@
                         </button>
                     </header>
                     <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-spinner 
+                            alternative-text="Loading" 
+                            size="large"
+                            variant="base"
+                            if:true={isModalLoading}
+                        ></lightning-spinner>
                         <div class="slds-grid slds-wrap slds-grid_align-spread">
                             <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate aquaMarine"><b>Bank
                                     Receipt</b></h2>
                             <template if:false={bankReceiptId}>
-                                <lightning-button variant="neutral" label="Post" title="Post" onclick={handlePost} disabled={bankReceiptId}
-                                class="slds-m-left_x-small"></lightning-button>
+                                <lightning-button variant="neutral" label="Post" title="Post" onclick={handlePost}
+                                    disabled={bankReceiptId} class="slds-m-left_x-small"></lightning-button>
                             </template>
                             <template if:true={bankReceiptId}>
                                 <lightning-button variant="neutral" label="Post" title="Post" onclick={handlePost}
-                                class="slds-m-left_x-small"></lightning-button>
+                                    class="slds-m-left_x-small"></lightning-button>
                             </template>
-                            
+
                         </div>
                         <div class="slds-grid slds-wrap">
                             <!-- Heading Part -->
@@ -133,7 +135,7 @@
                             <div class="slds-col slds-size_2-of-12 slds-p-left_x-small">
                                 <lightning-input type="number" name="exchangeRate" value={exchangeRate}
                                     onchange={handleExchangeRateChange} variant="label-hidden"
-                                    step="0.01"></lightning-input>
+                                    step="0.001"></lightning-input>
                             </div>
                             <!-- <div class="slds-col slds-size_3-of-12 slds-p-left_x-small"></div> -->
                             <!-- Add Line Item button -->

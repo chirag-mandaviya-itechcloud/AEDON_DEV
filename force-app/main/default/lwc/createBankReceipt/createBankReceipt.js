@@ -4,6 +4,7 @@ import fetchExistingReceipts from '@salesforce/apex/CreateBankReceiptController.
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import saveReceiptHeaderDetails from '@salesforce/apex/CreateBankReceiptController.saveReceiptHeaderDetails';
 import handlePostOnBankRecord from '@salesforce/apex/CreateBankReceiptController.handlePostOnBankRecord';
+import getExchangeRate from '@salesforce/apex/CreateBankReceiptController.getExchangeRate';
 import { getRecord } from 'lightning/uiRecordApi';
 
 import CURRENCY_FIELD from '@salesforce/schema/Bank__c.Currency__c';
@@ -38,6 +39,7 @@ export default class CreateBankReceipt extends LightningElement {
     @track selectedInvoiceDate;
     @track currencyISOCode;
     @track selectedCurrency;
+    @track defaultExchangeRate;
     @track exchangeRate;
     @track openLineItemsPart = false;
     @track bankHeaderCreated = false;
@@ -62,11 +64,32 @@ export default class CreateBankReceipt extends LightningElement {
         }
     }
 
+    @wire(getExchangeRate, {bankRecordId: '$recordId'})
+    getExchangeRate ({error, data}) {
+        if (error) {
+            console.error('Error fetching exchange rate:', error);
+        } else if (data) {
+            this.exchangeRate = data;
+            this.defaultExchangeRate = data;
+        }
+    }
+
     connectedCallback() {
         this.isLoading = true;
         // this.loadBankCurrencyData();
         this.getExistingBankReceipts();
     }
+
+    // navigateToRecord(bankReceiptId) {
+    //     this[NavigationMixin.Navigate]({
+    //         type: 'standard__recordPage',
+    //         attributes: {
+    //             recordId: bankReceiptId,
+    //             objectApiName: 'Bank_Receipt_Header__c',
+    //             actionName: 'view'
+    //         }
+    //     });
+    // }
 
     getExistingBankReceipts() {
         fetchExistingReceipts({ bankRecordId: this.recordId })
@@ -198,19 +221,22 @@ export default class CreateBankReceipt extends LightningElement {
     }
 
     handlePost() {
-        console.log('in handle post ');
-        console.log('this.bankReceiptId >>> in post : ', this.bankReceiptId);
         this.isModalLoading = true;
         handlePostOnBankRecord({ bankReceiptHeaderId: this.bankReceiptId })
-            .then(result => {
+        .then(result => {
+            // window.location.reload();
+            this.showToast('Success', 'Bank Receipt Posted Successfully.', 'success');
+            setTimeout(() => {
+                this.isModalLoading = false;
+                // this.navigateToRecord(this.bankReceiptId);
                 window.location.reload();
-                this.isModalLoading = false;
-            })
-            .catch(error => {
-                this.isModalLoading = false;
-                this.showToast('Error', 'Error Posting Bank Receipt: ' + error.body.message, 'error');
-                console.error('Error:', error);
-            });
+            }, 1000);
+        })
+        .catch(error => {
+            this.isModalLoading = false;
+            this.showToast('Error', 'Error Posting Bank Receipt: ' + error.body.message, 'error');
+            console.error('Error:', error);
+        });
     }
 
     handleSave() {
@@ -249,7 +275,7 @@ export default class CreateBankReceipt extends LightningElement {
         this.selectedInvoiceDate = '';
         this.selectedReference = '';
         this.selectedCurrency = this.defaultCurrency;
-        this.exchangeRate = '';
+        this.exchangeRate = this.defaultExchangeRate;
     }
 
     validateFields() {
@@ -269,7 +295,7 @@ export default class CreateBankReceipt extends LightningElement {
             this.showToast('Warning', 'Please fill the Currency.', 'warning');
             return false;
         }
-        if (!this.exchangeRate || this.exchangeRate.trim() === '') {
+        if (!this.exchangeRate || this.exchangeRate === '') {
             this.showToast('Warning', 'Please fill the Exchange Rate.', 'warning');
             return false;
         }
