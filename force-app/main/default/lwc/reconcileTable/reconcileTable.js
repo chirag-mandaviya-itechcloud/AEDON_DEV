@@ -24,7 +24,7 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
     @track totalSelectedAmount = 0;
     wiredBankFeeds;
     @track differenceAmount = 0;
-    @track modalkaspinner = false;
+    @track modalSpinner = false;
 
 
     @track allBankFeeds = [];
@@ -606,7 +606,7 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
             this.showToast('Error', 'Please select Account', 'error');
             return;
         }
-        this.modalkaspinner = true;
+        this.modalSpinner = true;
         var reference = this.bankFeedDetails.s2p3__Reference__c + ' ' + this.bankFeedDetails.s2p3__Description__c;
         var accountChoosen = this.internalAccount;
         const parts = this.bankFeedDetails.formattedDate.split('/');
@@ -614,18 +614,18 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
         var unitPrice = this.differenceAmount;
         createSPOA({ bankId: this.recordId, reference: reference, account: accountChoosen, selectedDate: dateSelected, unitPrice: unitPrice })
             .then(data => {
-                this.modalkaspinner = false;
+                this.modalSpinner = false;
                 this.showToast('Success', 'Sales payment created and posted successfully', 'success');
                 window.location.reload();
             })
             .catch(error => {
-                this.modalkaspinner = false;
+                this.modalSpinner = false;
                 this.showToast('Error', error.body.message, 'error');
             })
     }
 
     handleFXClicked() {
-        this.modalkaspinner = true;
+        this.modalSpinner = true;
         var reference = this.bankFeedDetails.s2p3__Reference__c + ' ' + this.bankFeedDetails.s2p3__Description__c;
         const parts = this.bankFeedDetails.formattedDate.split('/');
         var dateSelected = `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -633,19 +633,19 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
 
         createBRFXGainLoss({ bankId: this.recordId, reference: reference, selectedDate: dateSelected, unitPrice: unitPrice })
             .then(data => {
-                this.modalkaspinner = false;
+                this.modalSpinner = false;
                 this.showToast('Success', 'FX Gain/Loss created and posted successfully', 'success');
                 window.location.reload();
             })
             .catch(error => {
-                this.modalkaspinner = false;
+                this.modalSpinner = false;
                 this.showToast('Error', error.body.message, 'error');
             });
 
     }
 
     handleBCClicked() {
-        this.modalkaspinner = true;
+        this.modalSpinner = true;
         var reference = this.bankFeedDetails.s2p3__Reference__c + ' ' + this.bankFeedDetails.s2p3__Description__c;
         const parts = this.bankFeedDetails.formattedDate.split('/');
         var dateSelected = `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -653,12 +653,12 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
 
         createBPBankCharges({ bankId: this.recordId, reference: reference, selectedDate: dateSelected, unitPrice: unitPrice })
             .then(data => {
-                this.modalkaspinner = false;
+                this.modalSpinner = false;
                 this.showToast('Success', ' Bank Charges created and posted successfully', 'success');
                 window.location.reload();
             })
             .catch(error => {
-                this.modalkaspinner = false;
+                this.modalSpinner = false;
                 this.showToast('Error', error.body.message, 'error');
             });
 

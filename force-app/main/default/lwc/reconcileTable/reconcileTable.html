@@ -3,95 +3,109 @@
     <lightning-card title="Unreconciled Bank Statement" icon-name="standard:account">
         <div class="slds-grid slds-wrap slds-var-m-around_small">
             <div class="slds-col slds-size_1-of-12">
-                <lightning-select value={selectView} label="List View" title="selectView" options={viewOptions} onchange={handleViewChange} class="slds-m-left_x-small"></lightning-select>
+                <lightning-select value={selectView} label="List View" title="selectView" options={viewOptions}
+                    onchange={handleViewChange} class="slds-m-left_x-small"></lightning-select>
             </div>
             <div class="slds-col slds-size_1-of-12">
-                <lightning-input type="date" data-field="fromDate" value={fromDate} label="From Date" onchange={handleFromDateChange} class="slds-m-left_x-small"></lightning-input>
+                <lightning-input type="date" data-field="fromDate" value={fromDate} label="From Date"
+                    onchange={handleFromDateChange} class="slds-m-left_x-small"></lightning-input>
             </div>
             <div class="slds-col slds-size_1-of-12">
-                <lightning-input type="date" data-field="toDate" value={toDate} label="To Date" onchange={handleToDateChange} class="slds-m-left_x-small"></lightning-input>
+                <lightning-input type="date" data-field="toDate" value={toDate} label="To Date"
+                    onchange={handleToDateChange} class="slds-m-left_x-small"></lightning-input>
             </div>
             <div class="slds-col slds-size_1-of-12">
-                <lightning-input type="text" name="Reference" label="Reference" title="filReference" value={filReference} onchange={handlefilRefChange} class="slds-m-left_x-small"></lightning-input>
+                <lightning-input type="text" name="Reference" label="Reference" title="filReference"
+                    value={filReference} onchange={handlefilRefChange} class="slds-m-left_x-small"></lightning-input>
             </div>
             <div class="slds-col slds-size_2-of-12">
-                <lightning-input type="text" name="Description" label="Description" title="filDescription" value={filDescription} onchange={handlefilDescChange} class="slds-m-left_x-small"></lightning-input>
+                <lightning-input type="text" name="Description" label="Description" title="filDescription"
+                    value={filDescription} onchange={handlefilDescChange} class="slds-m-left_x-small"></lightning-input>
             </div>
             <div class="slds-col slds-size_1-of-12">
-                <lightning-input type="text" name="Amount" label="Amount" title="Amount" value={MinAmount} onchange={handleAmountChange} class="slds-m-left_x-small"></lightning-input>
+                <lightning-input type="text" name="Amount" label="Amount" title="Amount" value={MinAmount}
+                    onchange={handleAmountChange} class="slds-m-left_x-small"></lightning-input>
             </div>
             <div class="slds-size_3-of-12 slds-p-top_large">
-                <lightning-button label="Filter" onclick={fetchBankFeeds} variant="neutral" class="slds-m-left_x-small"></lightning-button>
-                <lightning-button label="Match Transactions" onclick={handleAutoMatch} variant="neutral" class="slds-m-left_x-small"></lightning-button>
-                <lightning-button label="Bulk Reconcile" onclick={bulkReconcile} variant="brand-outline" class="slds-m-left_x-small"></lightning-button>
+                <lightning-button label="Filter" onclick={fetchBankFeeds} variant="neutral"
+                    class="slds-m-left_x-small"></lightning-button>
+                <lightning-button label="Match Transactions" onclick={handleAutoMatch} variant="neutral"
+                    class="slds-m-left_x-small"></lightning-button>
+                <lightning-button label="Bulk Reconcile" onclick={bulkReconcile} variant="brand-outline"
+                    class="slds-m-left_x-small"></lightning-button>
             </div>
             <div class="slds-size_1-of-12 slds-p-top_large">
             </div>
             <div class="slds-size_1-of-12 slds-p-top_large">
-                <lightning-button label="Refresh" onclick={refreshData} variant="neutral" class="slds-m-left_x-small"></lightning-button>
+                <lightning-button label="Refresh" onclick={refreshData} variant="neutral"
+                    class="slds-m-left_x-small"></lightning-button>
             </div>
 
         </div>
 
         <template if:true={isLoading}>
-            <lightning-spinner alternative-text="Processing..." size="medium" ></lightning-spinner>
+            <lightning-spinner alternative-text="Processing..." size="medium"></lightning-spinner>
         </template>
-        
+
         <div class="slds-scrollable_x table-container slds-m-top_medium">
             <div class="slds-box slds-p-around_small">
                 <!-- Table Header -->
-                <div class="slds-grid slds-border_bottom slds-p-around_x-small slds-text-title_caps slds-wrap" style="width: 100%;">
+                <div class="slds-grid slds-border_bottom slds-p-around_x-small slds-text-title_caps slds-wrap"
+                    style="width: 100%;">
                     <div class="slds-col slds-size_1-of-12 slds-text-align_center" style="color:#00CC99;">Name</div>
                     <div class="slds-col slds-size_1-of-12 slds-text-align_center" style="color:#00CC99;">Date</div>
-                    <div class="slds-col slds-size_1-of-12 slds-text-align_center" style="color:#00CC99;">Reference</div>
-                    <div class="slds-col slds-size_2-of-12 slds-text-align_center" style="color:#00CC99;">Description</div>
+                    <div class="slds-col slds-size_1-of-12 slds-text-align_center" style="color:#00CC99;">Reference
+                    </div>
+                    <div class="slds-col slds-size_2-of-12 slds-text-align_center" style="color:#00CC99;">Description
+                    </div>
                     <div class="slds-col slds-size_1-of-12 slds-text-align_center" style="color:#00CC99;">Receipt</div>
                     <div class="slds-col slds-size_1-of-12 slds-text-align_center" style="color:#00CC99;">Payment</div>
                     <div class="slds-col slds-size_2-of-12 slds-text-align_center">Auto Matched To</div>
                     <div class="slds-col slds-size_1-of-12 slds-text-align_center">Auto Match</div>
                     <div class="slds-col slds-size_2-of-12 slds-text-align_center slds-grow">Actions</div>
                 </div>
-        
+
                 <template if:true={isMatching}>
                     <lightning-spinner alternative-text="Fetching Transactions..." size="medium"></lightning-spinner>
                 </template>
-        
+
                 <!-- Table Rows -->
                 <template for:each={bankFeeds} for:item="record">
-                    <div key={record.Id} class="slds-grid slds-border_bottom slds-p-around_x-small slds-wrap" style="width: 100%; align-items: center;">
+                    <div key={record.Id} class="slds-grid slds-border_bottom slds-p-around_x-small slds-wrap"
+                        style="width: 100%; align-items: center;">
                         <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center">
-                            <a href="javascript:void(0);" 
-                            data-id={record.Id} 
-                            onclick={navigateToRecord}>
-                            {record.Name}
+                            <a href="javascript:void(0);" data-id={record.Id} onclick={navigateToRecord}>
+                                {record.Name}
                             </a>
                         </div>
-                        <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center" title={record.s2p3__Date__c}>{record.formattedDate}</div>
-                        <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center" title={record.s2p3__Reference__c}>{record.s2p3__Reference__c}</div>
-                        <div class="slds-col slds-size_2-of-12 slds-truncate slds-text-align_center" title={record.s2p3__Description__c}>{record.s2p3__Description__c}</div>
-                        <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center" title={record.s2p3__Receipt__c}>{record.s2p3__Receipt__c}</div>
-                        <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center" title={record.s2p3__Payment__c}>{record.s2p3__Payment__c}</div>
-                        <div class="slds-col slds-size_2-of-12 slds-truncate slds-text-align_center" title={record.s2p3__Auto_Matched_To__c}>{record.s2p3__Auto_Matched_To__c}</div>
-                        <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center" title={record.s2p3__Auto_Match__c}>
-                            <lightning-input 
-                                type="checkbox" 
-                                checked={record.s2p3__Auto_Match__c} 
-                                disabled={record.isDisabled} 
-                                onchange={handleCheckboxChange} 
-                                data-id={record.Id}>
+                        <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center"
+                            title={record.s2p3__Date__c}>{record.formattedDate}</div>
+                        <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center"
+                            title={record.s2p3__Reference__c}>{record.s2p3__Reference__c}</div>
+                        <div class="slds-col slds-size_2-of-12 slds-truncate slds-text-align_center"
+                            title={record.s2p3__Description__c}>{record.s2p3__Description__c}</div>
+                        <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center"
+                            title={record.s2p3__Receipt__c}>{record.s2p3__Receipt__c}</div>
+                        <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center"
+                            title={record.s2p3__Payment__c}>{record.s2p3__Payment__c}</div>
+                        <div class="slds-col slds-size_2-of-12 slds-truncate slds-text-align_center"
+                            title={record.s2p3__Auto_Matched_To__c}>{record.s2p3__Auto_Matched_To__c}</div>
+                        <div class="slds-col slds-size_1-of-12 slds-truncate slds-text-align_center"
+                            title={record.s2p3__Auto_Match__c}>
+                            <lightning-input type="checkbox" checked={record.s2p3__Auto_Match__c}
+                                disabled={record.isDisabled} onchange={handleCheckboxChange} data-id={record.Id}>
                             </lightning-input>
                         </div>
-        
+
                         <!-- Actions Column -->
                         <div class="slds-col slds-size_2-of-12 slds-text-align_center">
                             <div class="slds-grid slds-gutters slds-nowrap slds-grid_align-center">
-                                <button class="slds-button slds-button_neutral slds-m-right_x-small"
-                                        data-id={record.Id} 
-                                        onclick={handleMatchToPayment}>
+                                <button class="slds-button slds-button_neutral slds-m-right_x-small" data-id={record.Id}
+                                    onclick={handleMatchToPayment}>
                                     Match to Transaction
                                 </button>
                                 <!--<button class="slds-button slds-button_brand"
-                                        data-id={record.Id} 
+                                        data-id={record.Id}
                                         onclick={handleMatchToRule}>
                                     Match to Rule
                                 </button>-->
@@ -100,90 +114,105 @@
                     </div>
                 </template>
             </div>
-            <br/>
+            <br />
             <div class="slds-text-align_right">
-                <lightning-button label="< Prev" variant="neutral" onclick={handlePrevious} disabled={isPreviousDisabled}></lightning-button>
+                <lightning-button label="< Prev" variant="neutral" onclick={handlePrevious}
+                    disabled={isPreviousDisabled}></lightning-button>
                 <span class="slds-m-horizontal_small">Page {currentPage} of {totalPages}</span>
-                <lightning-button variant="neutral" label="Next >" onclick={handleNext} disabled={isNextDisabled}></lightning-button>
+                <lightning-button variant="neutral" label="Next >" onclick={handleNext}
+                    disabled={isNextDisabled}></lightning-button>
             </div>
 
         </div>
-        
+
     </lightning-card>
 
     <!-- Popup Modal for Matching to Payment -->
     <template if:true={isModalOpen}>
         <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open custom-modal-width">
             <div class="slds-modal__container">
-                
-                <template if:true={modalkaspinner}>
+
+                <template if:true={modalSpinner}>
                     <lightning-spinner alternative-text="Processing..." size="medium"></lightning-spinner>
                 </template>
                 <!-- Modal Header -->
                 <header class="slds-modal__header">
-                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={closeModal}>
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        onclick={closeModal}>
                         <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
                     </button>
                     <h2 class="slds-text-heading_medium">Match to Transaction</h2>
                 </header>
 
-                
+
                 <!-- Modal Body with Table -->
                 <div class="slds-modal__content slds-p-around_medium">
-                    <h2 id="modal-heading-08" class="slds-text-heading_medium slds-hyphenate" style="color:#00CC99;"><b>Reconcile Bank Statement Line : {bankFeedDetails.Name}</b></h2>
+                    <h2 id="modal-heading-08" class="slds-text-heading_medium slds-hyphenate" style="color:#00CC99;">
+                        <b>Reconcile Bank Statement Line : {bankFeedDetails.Name}</b>
+                    </h2>
                     <div class="slds-grid slds-wrap">
                         <div class="slds-col slds-size_2-of-12 slds-p-right_x-small">
-                            <div class="slds-truncate" >
-                                <legend class="slds-form-element__legend slds-form-element__label" style="color:#00CC99;">Date</legend>
+                            <div class="slds-truncate">
+                                <legend class="slds-form-element__legend slds-form-element__label"
+                                    style="color:#00CC99;">Date</legend>
                             </div>
                         </div>
                         <div class="slds-col slds-size_2-of-12 slds-p-right_x-small">
-                            <div class="slds-truncate" >
-                                <legend class="slds-form-element__legend slds-form-element__label" style="color:#00CC99;">Reference</legend>
+                            <div class="slds-truncate">
+                                <legend class="slds-form-element__legend slds-form-element__label"
+                                    style="color:#00CC99;">Reference</legend>
                             </div>
                         </div>
                         <div class="slds-col slds-size_2-of-12 slds-p-right_x-small">
-                            <div class="slds-truncate" >
-                                <legend class="slds-form-element__legend slds-form-element__label" style="color:#00CC99;">Description</legend>
+                            <div class="slds-truncate">
+                                <legend class="slds-form-element__legend slds-form-element__label"
+                                    style="color:#00CC99;">Description</legend>
                             </div>
                         </div>
                         <div class="slds-col slds-size_4-of-12 slds-p-right_x-small">
                             <legend class="slds-form-element__legend slds-form-element__label">Internal Notes</legend>
                         </div>
                         <div class="slds-col slds-size_2-of-12 slds-p-right_x-small">
-                            <p  style="color:#00CC99;"><strong>Bank Feed Receipt</strong></p>
+                            <p style="color:#00CC99;"><strong>Bank Feed Receipt</strong></p>
                         </div>
                         <div class="slds-col slds-size_2-of-12 slds-p-right_x-small">
-                            <div class="slds-truncate" >
-                                <legend class="slds-form-element__legend slds-form-element__label" style="color:#00CC99;">{bankFeedDetails.formattedDate}</legend>
+                            <div class="slds-truncate">
+                                <legend class="slds-form-element__legend slds-form-element__label"
+                                    style="color:#00CC99;">{bankFeedDetails.formattedDate}</legend>
                             </div>
                         </div>
                         <div class="slds-col slds-size_2-of-12 slds-p-right_x-small">
-                            <div class="slds-truncate" >
-                                <legend class="slds-form-element__legend slds-form-element__label" style="color:#00CC99;">{bankFeedDetails.s2p3__Reference__c}</legend>
+                            <div class="slds-truncate">
+                                <legend class="slds-form-element__legend slds-form-element__label"
+                                    style="color:#00CC99;">{bankFeedDetails.s2p3__Reference__c}</legend>
                             </div>
                         </div>
                         <div class="slds-col slds-size_2-of-12 slds-p-right_x-small">
-                            <div class="slds-truncate" >
-                                <legend class="slds-form-element__legend slds-form-element__label" style="color:#00CC99;">{bankFeedDetails.s2p3__Description__c}</legend>
+                            <div class="slds-truncate">
+                                <legend class="slds-form-element__legend slds-form-element__label"
+                                    style="color:#00CC99;">{bankFeedDetails.s2p3__Description__c}</legend>
                             </div>
                         </div>
                         <div class="slds-col slds-size_4-of-12 slds-p-right_x-small">
-                            <div class="slds-truncate" >
-                                <legend class="slds-form-element__legend slds-form-element__label">{bankFeedDetails.s2p3__Internal_Notes__c}</legend>
+                            <div class="slds-truncate">
+                                <legend class="slds-form-element__legend slds-form-element__label">
+                                    {bankFeedDetails.s2p3__Internal_Notes__c}</legend>
                             </div>
                         </div>
                         <div class="slds-col slds-size_2-of-12 slds-p-right_x-small">
-                           <legend class="slds-form-element__legend slds-form-element__label" style="color:#00CC99;">{bankFeedDetails.s2p3__Receipt__c}</legend>
+                            <legend class="slds-form-element__legend slds-form-element__label" style="color:#00CC99;">
+                                {bankFeedDetails.s2p3__Receipt__c}</legend>
                         </div>
                     </div>
-                    
+
                     <div class="slds-border_bottom" style="border-bottom : 1px solid; color:#00CC99; width:100%;"></div>
 
                     <div class="slds-m-top_medium"></div>
 
                     <div class="slds-scrollable_x">
-                        <h2 id="modal-heading-9" class="slds-text-heading_medium slds-hyphenate aquaMarine"><b>Transaction (Filter)</b></h2>
+                        <h2 id="modal-heading-9" class="slds-text-heading_medium slds-hyphenate aquaMarine">
+                            <b>Transaction (Filter)</b>
+                        </h2>
                         <div class="slds-grid slds-wrap">
                             <div class="slds-col slds-size_2-of-12 slds-p-left_x-small">
                                 <legend class="slds-form-element__legend slds-form-element__label">Account Name</legend>
@@ -192,13 +221,16 @@
                                 <legend class="slds-form-element__legend slds-form-element__label">From Date</legend>
                             </div>
                             <div class="slds-col slds-size_2-of-12 slds-p-left_x-small">
-                                <legend class="slds-form-element__legend slds-form-element__label">Transaction Type</legend>
+                                <legend class="slds-form-element__legend slds-form-element__label">Transaction Type
+                                </legend>
                             </div>
                             <div class="slds-col slds-size_1-of-12 slds-p-left_x-small">
-                                <legend class="slds-form-element__legend slds-form-element__label">Transaction Name</legend>
+                                <legend class="slds-form-element__legend slds-form-element__label">Transaction Name
+                                </legend>
                             </div>
                             <div class="slds-col slds-size_4-of-12 slds-p-left_x-small">
-                                <legend class="slds-form-element__legend slds-form-element__label">Customer/Payment Reference</legend>
+                                <legend class="slds-form-element__legend slds-form-element__label">Customer/Payment
+                                    Reference</legend>
                             </div>
                             <div class="slds-col slds-size_1-of-12 slds-p-left_x-small">
                                 <legend class="slds-form-element__legend slds-form-element__label">Amount</legend>
@@ -207,30 +239,40 @@
                             </div>
 
                             <div class="slds-col slds-size_2-of-12 slds-p-left_x-small" style="margin-top: -21px">
-                                <c-lookup  placeholder="Search..."  object-api-name="Account" field-api-name="Name" icon-name="standard:account" onselect={handleAccountSelected} ></c-lookup> 
+                                <c-lookup placeholder="Search..." object-api-name="Account" field-api-name="Name"
+                                    icon-name="standard:account" onselect={handleAccountSelected}></c-lookup>
                             </div>
                             <div class="slds-col slds-size_1-of-12 slds-p-left_x-small">
-                                <lightning-input type="date" variant="label-hidden" name="input1" value={fromDate} onchange={internalDateChanged}></lightning-input>
+                                <lightning-input type="date" variant="label-hidden" name="input1" value={fromDate}
+                                    onchange={internalDateChanged}></lightning-input>
                             </div>
-                             <div class="slds-col slds-size_2-of-12 slds-p-left_x-small">
-                                <lightning-combobox name="select1" variant="label-hidden" options={transactionTypeOption} value={transactionReference} onchange={handleTransctionTypeChange}></lightning-combobox>
+                            <div class="slds-col slds-size_2-of-12 slds-p-left_x-small">
+                                <lightning-combobox name="select1" variant="label-hidden"
+                                    options={transactionTypeOption} value={transactionReference}
+                                    onchange={handleTransctionTypeChange}></lightning-combobox>
                             </div>
                             <div class="slds-col slds-size_1-of-12 slds-p-left_x-small">
-                                <lightning-input type="text" variant="label-hidden" value={transactionName} onchange={transactionNameChanged} ></lightning-input>
+                                <lightning-input type="text" variant="label-hidden" value={transactionName}
+                                    onchange={transactionNameChanged}></lightning-input>
                             </div>
                             <div class="slds-col slds-size_4-of-12 slds-p-left_x-small">
-                                <lightning-input type="text" variant="label-hidden" value={reference} onchange={refChanged} ></lightning-input>
+                                <lightning-input type="text" variant="label-hidden" value={reference}
+                                    onchange={refChanged}></lightning-input>
                             </div>
                             <div class="slds-col slds-size_1-of-12 slds-p-left_x-small">
-                                <lightning-input type="text" name="Amount"  title="Amount" value={Amount} onchange={handleAmountChange} variant="label-hidden"></lightning-input>
+                                <lightning-input type="text" name="Amount" title="Amount" value={Amount}
+                                    onchange={handleAmountChange} variant="label-hidden"></lightning-input>
                             </div>
                             <div class="slds-col slds-size_1-of-12 slds-p-left_x-small">
-                                <lightning-button label="Filter" onclick={filterInternalData} variant="neutral" class="slds-m-left_x-small"></lightning-button>
+                                <lightning-button label="Filter" onclick={filterInternalData} variant="neutral"
+                                    class="slds-m-left_x-small"></lightning-button>
                             </div>
                         </div>
-                        <br/>
-                        <div class="slds-grid slds-wrap slds-box slds-grid_align-spread slds-p-around_small" style="overflow: auto;max-height: 30vh;">
-                            <div class="slds-grid slds-gutters slds-border_bottom slds-p-around_x-small slds-text-title_caps" style="width: 100%;">
+                        <br />
+                        <div class="slds-grid slds-wrap slds-box slds-grid_align-spread slds-p-around_small"
+                            style="overflow: auto;max-height: 30vh;">
+                            <div class="slds-grid slds-gutters slds-border_bottom slds-p-around_x-small slds-text-title_caps"
+                                style="width: 100%;">
                                 <div class="slds-col slds-size_1-of-12 slds-text-align_center"></div>
                                 <div class="slds-col slds-size_1-of-12 slds-text-align_center">Account</div>
                                 <div class="slds-col slds-size_1-of-12 slds-text-align_center">Date</div>
@@ -242,32 +284,45 @@
                             </div>
 
                             <template for:each={matchingTransactions} for:item="transaction">
-                                <div key={transaction.Id} class="slds-grid slds-gutters slds-border_bottom slds-p-around_x-small" style="width: 100%;">
+                                <div key={transaction.Id}
+                                    class="slds-grid slds-gutters slds-border_bottom slds-p-around_x-small"
+                                    style="width: 100%;">
                                     <div class="slds-col slds-size_1-of-12 slds-text-align_center">
-                                        <lightning-input  type="checkbox"   data-id={transaction.Id}  checked={transaction.isSelected} onchange={handleCheckboxChange}></lightning-input>
+                                        <lightning-input type="checkbox" data-id={transaction.Id}
+                                            checked={transaction.isSelected}
+                                            onchange={handleCheckboxChange}></lightning-input>
                                     </div>
-                                    <div class="slds-col slds-size_1-of-12 slds-text-align_center">{transaction.accountName}</div>
-                                    <div class="slds-col slds-size_1-of-12 slds-text-align_center">{transaction.formattedDate}</div>
-                                    <div class="slds-col slds-size_2-of-12 slds-text-align_center">{transaction.s2p3__Nature_of_Transaction__c}</div>
-                                    <div class="slds-col slds-size_1-of-12 slds-text-align_center">{transaction.s2p3__Reference_Name__c}</div>
-                                    <div class="slds-col slds-size_2-of-12 slds-text-align_center">{transaction.s2p3__Customer_Reference__c}</div>
-                                    <div class="slds-col slds-size_2-of-12 slds-text-align_center">{transaction.s2p3__Payment_Reference__c}</div>
-                                    <div class="slds-col slds-size_2-of-12 slds-text-align_center">{transaction.amount}</div>
+                                    <div class="slds-col slds-size_1-of-12 slds-text-align_center">
+                                        {transaction.accountName}</div>
+                                    <div class="slds-col slds-size_1-of-12 slds-text-align_center">
+                                        {transaction.formattedDate}</div>
+                                    <div class="slds-col slds-size_2-of-12 slds-text-align_center">
+                                        {transaction.s2p3__Nature_of_Transaction__c}</div>
+                                    <div class="slds-col slds-size_1-of-12 slds-text-align_center">
+                                        {transaction.s2p3__Reference_Name__c}</div>
+                                    <div class="slds-col slds-size_2-of-12 slds-text-align_center">
+                                        {transaction.s2p3__Customer_Reference__c}</div>
+                                    <div class="slds-col slds-size_2-of-12 slds-text-align_center">
+                                        {transaction.s2p3__Payment_Reference__c}</div>
+                                    <div class="slds-col slds-size_2-of-12 slds-text-align_center">{transaction.amount}
+                                    </div>
                                 </div>
                             </template>
                         </div>
                         <div class="slds-m-top_small slds-text-align_right">
-                            <lightning-button label="Previous" onclick={handlePreviousPage} disabled={isPrevDisabled}></lightning-button>
+                            <lightning-button label="Previous" onclick={handlePreviousPage}
+                                disabled={isPrevDisabled}></lightning-button>
 
                             <span class="slds-m-horizontal_small">
                                 Page {internalPageNumber} of {internalTotalPages}
                             </span>
 
-                            <lightning-button label="Next" onclick={handleNextPage} disabled={isNextDisabled}></lightning-button>
+                            <lightning-button label="Next" onclick={handleNextPage}
+                                disabled={isNextDisabled}></lightning-button>
                         </div>
                     </div>
-                    
-                    <br/>
+
+                    <br />
                     <div class="slds-box slds-theme_shade slds-grid_align-spread slds-p-around_small">
                         <div class="slds-grid slds-wrap slds-grid_align-spread">
                             <div class="slds-col slds-size_8-of-12 slds-text-align_center"></div>
@@ -287,18 +342,25 @@
                                 <span style={differenceStyle}>{differenceAmount}</span>
                             </div>
                         </div>
-                        
+
                         <div class="slds-text-align_center">
-                            <lightning-button  label="Payment on Account" title="Payment on Account" name="POA" onclick={handleClick} class="slds-m-left_x-small" disabled={isPaymentOnAccountDisabled} variant={paymentOnAccountVariant}>
+                            <lightning-button label="Payment on Account" title="Payment on Account" name="POA"
+                                onclick={handleClick} class="slds-m-left_x-small" disabled={isPaymentOnAccountDisabled}
+                                variant={paymentOnAccountVariant}>
                             </lightning-button>
 
-                            <lightning-button label="FX Gain or Loss" title="FX Gain or Loss" name="FX" onclick={handleClick} class="slds-m-left_x-small" disabled={isFxGainLossDisabled} variant={fxGainLossVariant}>
+                            <lightning-button label="FX Gain or Loss" title="FX Gain or Loss" name="FX"
+                                onclick={handleClick} class="slds-m-left_x-small" disabled={isFxGainLossDisabled}
+                                variant={fxGainLossVariant}>
                             </lightning-button>
 
-                            <lightning-button label="Bank Charges" title="Bank Charges" name="BC" onclick={handleClick} class="slds-m-left_x-small" disabled={isBankChargesDisabled} variant={bankChargesVariant}>
+                            <lightning-button label="Bank Charges" title="Bank Charges" name="BC" onclick={handleClick}
+                                class="slds-m-left_x-small" disabled={isBankChargesDisabled}
+                                variant={bankChargesVariant}>
                             </lightning-button>
 
-                            <lightning-button label="Write-off" title="Write-off" name="WO" onclick={handleClick} class="slds-m-left_x-small" disabled={isWriteOffDisabled} variant={writeOffVariant}>
+                            <lightning-button label="Write-off" title="Write-off" name="WO" onclick={handleClick}
+                                class="slds-m-left_x-small" disabled={isWriteOffDisabled} variant={writeOffVariant}>
                             </lightning-button>
                         </div>
                     </div>
@@ -306,7 +368,8 @@
 
                 <!-- Modal Footer -->
                 <footer class="slds-modal__footer">
-                    <button class="slds-button slds-button_brand" onclick={handleReconcile} disabled={isReconcileDisabled}>Reconcile</button>
+                    <button class="slds-button slds-button_brand" onclick={handleReconcile}
+                        disabled={isReconcileDisabled}>Reconcile</button>
                 </footer>
             </div>
         </section>
