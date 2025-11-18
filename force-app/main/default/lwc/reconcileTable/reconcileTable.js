@@ -8,6 +8,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
 import createBRFXGainLoss from '@salesforce/apex/BankReconciliationController.createBRFXGainLoss';
+import createBPBankCharges from '@salesforce/apex/BankReconciliationController.createBPBankCharges';
 
 export default class ReconcileTable extends NavigationMixin(LightningElement) {
     @api recordId;
@@ -356,6 +357,8 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
             this.handlePOAClicked();
         } else if (this.selectedButton == 'FX') {
             this.handleFXClicked();
+        } else if (this.selectedButton == 'BC') {
+            this.handleBCClicked();
         } else {
             if (this.selectedBankFeedIds.size === 0) {
                 this.showToast('Error', 'Please select at least one Ledger Entry to reconcile.', 'error');
@@ -632,6 +635,26 @@ export default class ReconcileTable extends NavigationMixin(LightningElement) {
             .then(data => {
                 this.modalkaspinner = false;
                 this.showToast('Success', 'FX Gain/Loss created and posted successfully', 'success');
+                window.location.reload();
+            })
+            .catch(error => {
+                this.modalkaspinner = false;
+                this.showToast('Error', error.body.message, 'error');
+            });
+
+    }
+
+    handleBCClicked() {
+        this.modalkaspinner = true;
+        var reference = this.bankFeedDetails.s2p3__Reference__c + ' ' + this.bankFeedDetails.s2p3__Description__c;
+        const parts = this.bankFeedDetails.formattedDate.split('/');
+        var dateSelected = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        var unitPrice = Math.abs(this.differenceAmount);
+
+        createBPBankCharges({ bankId: this.recordId, reference: reference, selectedDate: dateSelected, unitPrice: unitPrice })
+            .then(data => {
+                this.modalkaspinner = false;
+                this.showToast('Success', ' Bank Charges created and posted successfully', 'success');
                 window.location.reload();
             })
             .catch(error => {

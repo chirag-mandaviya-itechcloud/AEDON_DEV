@@ -355,6 +355,38 @@ public with sharing class BankReconciliationController {
         }
     }
 
+    @AuraEnabled
+    public static void createBPBankCharges(string bankId, String reference, String selectedDate, Decimal unitPrice){
+        try {
+            List<Bank__c> bankRecord = [SELECT Id, Currency__c, Account__c, Sub_Ledger_for_Bank_Charges__c, Tax_Group_for_Bank_Charges__c FROM Bank__c WHERE Id = :bankId WITH SECURITY_ENFORCED];
+            Bank_Payment_Header__c  bpHeader = new Bank_Payment_Header__c ();
+            bpHeader.To_Account__c = bankRecord[0].Account__c;
+            bpHeader.Invoice_Date__c = Date.valueof(selectedDate);
+            bpHeader.Customer_Reference__c = (reference != null && reference.length() > 25) ? reference.substring(0, 25) : reference;
+            bpHeader.Transaction_Currency__c = bankRecord[0].Currency__c;
+            bpHeader.Transaction_Currency_Exchange_Rate__c = getExchangeRate(bankId);
+            bpHeader.Bank_Account__c = bankId;
+            bpHeader.Company__c = UtilsController.getCompanyInformation().Id;
+            List<SObject> recordsToInsert = new List<SObject>{ bpHeader };
+            recordsToInsert = DBOpsUtils.s2p3Insert(recordsToInsert);
+
+            Bank_Payment_Transaction__c  bpTransaction = new Bank_Payment_Transaction__c();
+            bpTransaction.Quantity__c = 1;
+            bpTransaction.Unit_Price__c = unitPrice;
+            bpTransaction.Sub_Ledger__c = bankRecord[0].Sub_Ledger_for_Bank_Charges__c;
+            bpTransaction.Tax_Group__c = bankRecord[0].Tax_Group_for_Bank_Charges__c;
+            bpTransaction.Net_Amount__c = unitPrice;
+            bpTransaction.Gross_Amount__c = unitPrice;
+            bpTransaction.Bank_Payment_Header__c = recordsToInsert[0].Id;
+            List<SObject> recordsToInsertline = new List<SObject>{ bpTransaction };
+            recordsToInsertline = DBOpsUtils.s2p3Insert(recordsToInsertline);
+
+            CreateBankPaymentController.handlePostOnBankPaymentRecord(recordsToInsert[0].Id);
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
     public static void handlePostOnSPOARecord(String spoaRecordId) {
         List<TransactionPostingService.RequestParams> paramList = new List<TransactionPostingService.RequestParams>();
         TransactionPostingService.RequestParams req = new TransactionPostingService.RequestParams();
