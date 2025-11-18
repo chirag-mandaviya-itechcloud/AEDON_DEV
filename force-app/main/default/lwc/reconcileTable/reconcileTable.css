@@ -1,0 +1,57 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.slds-scrollable_x {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.slds-box {
+    width: 100%;
+    max-width: 100%;
+}
+
+.slds-modal__container {
+    max-width: 40rem;
+}
+
+.date-filter-container {
+    display: flex;
+    justify-content: center; /* Center align */
+    align-items: center; /* Align items vertically */
+    gap: 10px; /* Add spacing between elements */
+}
+
+.date-input .slds-input {
+    width: 110px; /* Slightly larger for better readability */
+    text-align: center; /* Center text inside input */
+}
+
+.apply-button {
+    height: 28px; /* Standard button height */
+    font-size: 12px; /* Match input font size */
+    padding: 2px 12px;
+    border-radius: 4px; /* Slightly rounded corners */
+    border: 1px solid #0070d2; /* Salesforce blue */
+    background: #0070d2; /* Blue background */
+    color: white; /* White text */
+    cursor: pointer;
+}
+
+.apply-button:hover {
+    background: #005fb2; /* Slightly darker blue on hover */
+}
+
+.custom-modal-width .slds-modal__container {
+    max-width: 75vw; /* 80% of viewport width */
+    width: auto;
+}
+
+.slds-grid_align-center {
+    justify-content: center;
+}
+.slds-nowrap {
+    white-space: nowrap;
+}
