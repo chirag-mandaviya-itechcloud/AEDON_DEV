@@ -50,4 +50,22 @@ public class CreateBankReceiptController {
         paramList.add(req);
         TransactionPostingService.postSalesInvoice(paramList);
 	}
+    
+    @AuraEnabled(cacheable=true)
+    public static double getExchangeRate(String bankRecordId) {
+        List<Bank__c> bankRecord = [SELECT Id, Currency__c FROM Bank__c WHERE Id = :bankRecordId WITH SECURITY_ENFORCED];
+        
+        if (bankRecord.isEmpty()) {
+            return null;
+        }
+        
+        Date todayDate = Date.today();
+        
+        List<Currency_Exchange_Rate__c> exchangeRateList = [SELECT Id, Exchange_Rate__c FROM Currency_Exchange_Rate__c WHERE Purpose__c = 'Transactional' AND To_Currency__c = :bankRecord[0].Currency__c AND From_Date__c <=:todayDate WITH SECURITY_ENFORCED ORDER BY From_Date__c DESC LIMIT 1];
+        
+        if (exchangeRateList.isEmpty() || exchangeRateList[0].Exchange_Rate__c == null) {
+            return null;
+        }
+        return exchangeRateList[0].Exchange_Rate__c;
+    }
 }
