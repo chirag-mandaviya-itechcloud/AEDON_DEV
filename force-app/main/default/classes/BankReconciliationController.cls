@@ -1,4 +1,160 @@
 public with sharing class BankReconciliationController {
+    
+    @AuraEnabled
+    public static List<ReconcileRecordWrapper> getListOfRecords(
+        String bankFeedId,
+        String accountId,
+        Date fromDate,
+        String transactionType,
+        String transactionName,
+        String reference,
+        String amount
+    ) {
+        List<ReconcileRecordWrapper> finalRecords = new List<ReconcileRecordWrapper>();
+        List<s2p3__Eligible_Reconcile_Object__mdt> activeList = [
+            SELECT Id, DeveloperName, s2p3__Is_Active__c,
+            s2p3__Object_API_Name__c,
+            s2p3__Account__c, s2p3__Date__c,
+            s2p3__Transaction_Type__c,s2p3__Transaction_Name__c,
+            s2p3__Reference__c, s2p3__Amount__c
+            FROM s2p3__Eligible_Reconcile_Object__mdt
+            WHERE s2p3__Is_Active__c = TRUE
+        ];
+        
+        if (activeList.isEmpty()) {
+            throw new AuraHandledException('No active Eligible Reconcile Object metadata found. Please create one.');
+        }
+        
+        
+        Map<String, List<String>> objectWiseFieldsMap = new Map<String, List<String>>();
+        Map<String, Map<String, String>> objectWiseFieldMapping = new Map<String, Map<String, String>>();
+        
+        for (s2p3__Eligible_Reconcile_Object__mdt data : activeList) {
+            if (!objectWiseFieldsMap.containsKey(data.s2p3__Object_API_Name__c)) {
+                
+                
+                objectWiseFieldsMap.put(data.s2p3__Object_API_Name__c, new List<String>{
+                    data.s2p3__Account__c,
+                        data.s2p3__Date__c,
+                        data.s2p3__Transaction_Type__c,
+                        data.s2p3__Reference__c,
+                        data.s2p3__Amount__c,
+                        data.s2p3__Transaction_Name__c
+                        });
+                
+                objectWiseFieldMapping.put(data.s2p3__Object_API_Name__c, new Map<String,String>{
+                    'account'          => data.s2p3__Account__c,
+                        'date'             => data.s2p3__Date__c,
+                        'transactionType'  => data.s2p3__Transaction_Type__c,
+                        'reference'        => data.s2p3__Reference__c,
+                        'amount'           => data.s2p3__Amount__c,
+                        'name'             => data.s2p3__Transaction_Name__c
+                        });
+            }
+        }
+        
+        for (String obj : objectWiseFieldsMap.keySet()) {
+            
+            String selectFields = String.join(objectWiseFieldsMap.get(obj), ', ');
+            
+            List<String> whereConditions = new List<String>();
+            Map<String, String> fieldMap = objectWiseFieldMapping.get(obj);
+            
+            if (String.isNotBlank(accountId)) {
+                whereConditions.add(fieldMap.get('account') + ' = \'' + String.escapeSingleQuotes(accountId) + '\'');
+            }
+            
+            if (fromDate != null) {
+                whereConditions.add(fieldMap.get('date') + ' >=: fromDate') ;
+            }
+            
+            if (String.isNotBlank(transactionType)) {
+                whereConditions.add(fieldMap.get('transactionType') + ' = \'' + String.escapeSingleQuotes(transactionType) + '\'');
+            }
+            
+            if(String.isNotBlank(transactionName)) {
+                whereConditions.add(fieldMap.get('name') + ' LIKE \'%' + String.escapeSingleQuotes(transactionName) + '%\'');
+            }
+            
+            if (String.isNotBlank(reference)) {
+                whereConditions.add(fieldMap.get('reference') + ' LIKE \'%' + String.escapeSingleQuotes(reference) + '%\'');
+            }
+            
+            if (String.isNotBlank(amount)) {
+                amount = Amount.trim();
+                String operator = '';
+                Decimal amountValue;
+                
+                if (Amount.startsWith('<') || Amount.startsWith('>') || Amount.startsWith('=')) {
+                    operator = Amount.substring(0, 1);
+                    amountValue = Decimal.valueOf(Amount.substring(1));
+                } else {
+                    operator = '=';
+                    amountValue = Decimal.valueOf(Amount);
+                }
+                
+                whereConditions.add(fieldMap.get('amount') + operator + amount);
+            }
+            
+            String whereClause = (whereConditions.isEmpty()) ? '' : ' WHERE ' + String.join(whereConditions, ' AND ');
+
+            String finalQuery = 'SELECT ' + selectFields + ' FROM ' + obj + whereClause + ' WITH SECURITY_ENFORCED' + ' LIMIT 40';
+            System.debug('FINAL QUERY => ' + finalQuery);
+            
+            List<SObject> result = Database.query(finalQuery);
+            for (SObject rec : result) {
+                ReconcileRecordWrapper wrap = new ReconcileRecordWrapper();
+                
+                wrap.id = (String)rec.get('Id');
+                wrap.account = (String)rec.get(fieldMap.get('account')) ?? '';
+                wrap.dateValue = (Date)rec.get(fieldMap.get('date')) ?? null;
+                wrap.transactionType = (String)rec.get(fieldMap.get('transactionType')) ?? '';
+                wrap.name = (String)rec.get(fieldMap.get('name')) ?? '';
+                wrap.reference = (String)rec.get(fieldMap.get('reference')) ?? '';
+                wrap.amount = (Decimal)rec.get(fieldMap.get('amount')) ?? 0;
+                
+                finalRecords.add(wrap);
+            }
+        }
+        return finalRecords;
+    }
+
+    
+    /*@AuraEnabled
+    public Static void getListOfRecords(String bankFeedId, String accountId, Date fromDate, String transactionType, String transactionName, String reference, String amount) {
+        
+        List<s2p3__Eligible_Reconcile_Object__mdt> activeList = [
+            SELECT Id, DeveloperName, s2p3__Is_Active__c, s2p3__Object_API_Name__c, s2p3__Account__c, s2p3__Date__c, s2p3__Transaction_Type__c, s2p3__Reference__c, s2p3__Amount__c
+            FROM s2p3__Eligible_Reconcile_Object__mdt
+            WHERE s2p3__Is_Active__c = TRUE
+        ];
+        
+        if (activeList.isEmpty()) {
+            throw new AuraHandledException('No active Eligible Reconcile Object metadata found. Please create one.');
+        }
+        else {
+            List<String> eligibeObjectList = new List<String>();
+            Map<String,List<String>> objectWiseFieldsMap = new Map<String,List<String>>();
+            for(s2p3__Eligible_Reconcile_Object__mdt data : activeList) {
+                List<String> fieldsList = new List<String>();
+                if(!objectWiseFieldsMap.containsKey(data.s2p3__Object_API_Name__c)){
+                    fieldsList.add(data.s2p3__Account__c);
+                    fieldsList.add(data.s2p3__Date__c);
+                    fieldsList.add(data.s2p3__Transaction_Type__c);
+                    fieldsList.add(data.s2p3__Reference__c);
+                    fieldsList.add(data.s2p3__Amount__c);
+                    objectWiseFieldsMap.put(data.s2p3__Object_API_Name__c, fieldsList);
+                }
+            }
+            system.debug('object wise Fields ::: ' + objectWiseFieldsMap);
+            for (String obj : objectWiseFieldsMap.keyset()) {
+                String fieldsApiNames = String.join(objectWiseFieldsMap.get(obj), ', ');
+                String query = 'SELECT ' + fieldsApiNames + ' FROM '+ obj + '';
+                system.debug('query=>'+query);
+            }
+        }    
+    }*/
+    
     @AuraEnabled(cacheable=true)
     public static List<s2p3__Bank_Feed__c> getBankFeeds(Id bankId, String listView, Date fromDate, Date toDate, String filReference, String description, String amount) {
 
@@ -402,5 +558,14 @@ public with sharing class BankReconciliationController {
         paramList.add(req);
         TransactionPostingService.postSalesInvoice(paramList);
 	}
-
+    
+    public class ReconcileRecordWrapper {
+        @AuraEnabled public String id = null;
+        @AuraEnabled public String account = null;
+        @AuraEnabled public Date dateValue = null;
+        @AuraEnabled public String transactionType = null;
+        @AuraEnabled public String reference = null;
+        @AuraEnabled public String name = null;
+        @AuraEnabled public Decimal amount = null;
+    }
 }
