@@ -40,7 +40,6 @@ public class CreateBankReceiptController {
         
         String namespace = UtilsController.getNameSpace();
 
-        //req.recordIds = new List<Id>{bankReceiptHeaderId};
         req.recordIdSingle = bankReceiptHeaderId;
         req.masterObjectName = 'Bank_Receipt_Header__c';
         req.detailObjectName = 'Bank_Receipt_Transaction__c';

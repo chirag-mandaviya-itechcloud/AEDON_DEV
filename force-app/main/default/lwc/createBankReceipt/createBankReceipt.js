@@ -1,12 +1,10 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import fetchBankAccountViewNew from "@salesforce/apex/CreateMatchingRuleController.fetchBankAccountViewNew";
-import fetchExistingReceipts from '@salesforce/apex/CreateBankReceiptController.fetchExistingReceipts';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { getRecord } from 'lightning/uiRecordApi';
+import fetchExistingReceipts from '@salesforce/apex/CreateBankReceiptController.fetchExistingReceipts';
 import saveReceiptHeaderDetails from '@salesforce/apex/CreateBankReceiptController.saveReceiptHeaderDetails';
 import handlePostOnBankRecord from '@salesforce/apex/CreateBankReceiptController.handlePostOnBankRecord';
 import getExchangeRate from '@salesforce/apex/CreateBankReceiptController.getExchangeRate';
-import { getRecord } from 'lightning/uiRecordApi';
-
 import CURRENCY_FIELD from '@salesforce/schema/Bank__c.Currency__c';
 
 const columns = [
@@ -23,7 +21,6 @@ const columns = [
     { label: 'Posting Status', fieldName: 's2p3__Posting_Status__c' },
     { label: 'Customer Reference', fieldName: 's2p3__Customer_Reference__c' },
     { label: 'Gross Amount', fieldName: 's2p3__Gross_Amount__c' }
-    // { label: 'Currency', fieldName: 'currencyName' }
 ];
 export default class CreateBankReceipt extends LightningElement {
     @api recordId;
@@ -76,47 +73,33 @@ export default class CreateBankReceipt extends LightningElement {
 
     connectedCallback() {
         this.isLoading = true;
-        // this.loadBankCurrencyData();
         this.getExistingBankReceipts();
     }
 
-    // navigateToRecord(bankReceiptId) {
-    //     this[NavigationMixin.Navigate]({
-    //         type: 'standard__recordPage',
-    //         attributes: {
-    //             recordId: bankReceiptId,
-    //             objectApiName: 'Bank_Receipt_Header__c',
-    //             actionName: 'view'
-    //         }
-    //     });
-    // }
-
     getExistingBankReceipts() {
         fetchExistingReceipts({ bankRecordId: this.recordId })
-            .then(result => {
-                this.isLoading = false;
-                this.allBankReceiptData = result.map(row => ({
-                    ...row,
-                    recordLink: '/' + row.Id,
-                    // currencyName: row.s2p3__Currency__r ? row.s2p3__Currency__r.Name : '',
-                    formattedDate: new Date(row.s2p3__Invoice_Date__c)
-                        .toLocaleDateString('en-GB')
-                        .replace(/\//g, '/'),
-                }));
+        .then(result => {
+            this.isLoading = false;
+            this.allBankReceiptData = result.map(row => ({
+                ...row,
+                recordLink: '/' + row.Id,
+                formattedDate: new Date(row.s2p3__Invoice_Date__c)
+                    .toLocaleDateString('en-GB')
+                    .replace(/\//g, '/'),
+            }));
 
-                if (this.allBankReceiptData.length > 0) {
-                    this.totalPages = Math.ceil(this.allBankReceiptData.length / this.pageSize);
-                    this.pageNumber = 1;
-                    this.setPageData();
-                } else {
-                    this.totalPages = 1;
-                    this.pageNumber = 1;
-                    this.singlePageBankReceiptData = [];
-                }
-
-            }).catch(error => {
-                console.error('Error fetching bank account view:', error);
-            });
+            if (this.allBankReceiptData.length > 0) {
+                this.totalPages = Math.ceil(this.allBankReceiptData.length / this.pageSize);
+                this.pageNumber = 1;
+                this.setPageData();
+            } else {
+                this.totalPages = 1;
+                this.pageNumber = 1;
+                this.singlePageBankReceiptData = [];
+            }
+        }).catch(error => {
+            console.error('Error fetching bank account view:', error);
+        });
     }
 
     setPageData() {
@@ -131,6 +114,13 @@ export default class CreateBankReceipt extends LightningElement {
             this.setPageData();
         }
     }
+    
+    handlePrev() {
+        if (this.pageNumber > 1) {
+            this.pageNumber--;
+            this.setPageData();
+        }
+    }
 
     get isPrevDisabled() {
         return this.pageNumber <= 1;
@@ -140,44 +130,15 @@ export default class CreateBankReceipt extends LightningElement {
         return this.pageNumber >= this.totalPages;
     }
 
-
-    handlePrev() {
-        if (this.pageNumber > 1) {
-            this.pageNumber--;
-            this.setPageData();
-        }
+    get divClass() {
+        return this.bankHeaderCreated ? '' : 'disabled-div';
     }
-
-    // loadBankCurrencyData() {
-    //     fetchBankAccountViewNew({ bankRecordId: this.recordId })
-    //         .then(result => {
-    //             this.isLoading = false;
-    //             this.bankAccountObj = result.bankAccountObj;
-
-    //             if (!result.bankAccountObj.s2p3__Currency__r.s2p3__IsBaseCurrency__c) {
-    //                 this.isNotBaseCurrency = true;
-    //             }
-    //             if (result.bankAccountObj.s2p3__Currency__c != null && result.bankAccountObj.s2p3__Currency__c != undefined && result.bankAccountObj.s2p3__Currency__c != '') {
-    //                 this.currencyId = result.bankAccountObj.s2p3__Currency__c;
-    //                 this.selectedCurrency = result.bankAccountObj.s2p3__Currency__c;
-    //                 this.defaultCurrency = result.bankAccountObj.s2p3__Currency__c;
-    //                 // this.createLookupCondition();
-    //             }
-    //             this.currencyISOCode = result.currencyISOCode;
-    //         }).catch(error => {
-    //             this.isLoading = false;
-    //             console.error('Error fetching bank account view:', error);
-    //         });
-    // }
-
-    // createLookupCondition() {
-    //     this.lookUpWhereCondition = ' AND s2p3__Account_Currency__c = ' + '\'' + this.currencyId + '\'';
-    // }
 
     handleAccountSelected(event) {
         if (event.detail.length == 0) {
             this.accountSelected = null;
         }
+
         if (event.detail.length > 0 && event.detail[0].id != undefined && event.detail[0].id != null) {
             this.accountSelected = event.detail[0].id;
         }
@@ -187,6 +148,7 @@ export default class CreateBankReceipt extends LightningElement {
         if (!event.detail.recordId) {
             this.selectedCurrency = null;
         }
+
         if (event.detail && event.detail.recordId != undefined && event.detail.recordId != null) {
             this.selectedCurrency = event.detail.recordId;
         }
@@ -216,19 +178,13 @@ export default class CreateBankReceipt extends LightningElement {
         this.clearFieldSelection();
     }
 
-    get divClass() {
-        return this.bankHeaderCreated ? '' : 'disabled-div';
-    }
-
     handlePost() {
         this.isModalLoading = true;
         handlePostOnBankRecord({ bankReceiptHeaderId: this.bankReceiptId })
         .then(result => {
-            // window.location.reload();
             this.showToast('Success', 'Bank Receipt Posted Successfully.', 'success');
             setTimeout(() => {
                 this.isModalLoading = false;
-                // this.navigateToRecord(this.bankReceiptId);
                 window.location.reload();
             }, 1000);
         })
@@ -244,7 +200,9 @@ export default class CreateBankReceipt extends LightningElement {
         if (!isValid) {
             return;
         }
+
         this.isModalLoading = true;
+
         saveReceiptHeaderDetails({
             bankRecordId: this.recordId,
             accountId: this.accountSelected,
@@ -253,21 +211,19 @@ export default class CreateBankReceipt extends LightningElement {
             currencyId: this.selectedCurrency,
             exchangeRate: this.exchangeRate
         })
-            .then(result => {
-                this.isModalLoading = false;
-                // this.showToast('Success', 'Bank Receipt Created Successfully.', 'success');
-                this.openLineItemsPart = true;
-                this.bankHeaderCreated = true;
-                this.bankReceiptId = result[0].Id;
-
-            })
-            .catch(error => {
-                this.isLoading = false;
-                this.isModalLoading = false;
-                this.bankReceiptId = '';
-                this.showToast('Error', 'Error Creating Bank Receipt: ' + error.body.message, 'error');
-                console.error('Error saving Record:', error);
-            });
+        .then(result => {
+            this.isModalLoading = false;
+            this.openLineItemsPart = true;
+            this.bankHeaderCreated = true;
+            this.bankReceiptId = result[0].Id;
+        })
+        .catch(error => {
+            this.isLoading = false;
+            this.isModalLoading = false;
+            this.bankReceiptId = '';
+            this.showToast('Error', 'Error Creating Bank Receipt: ' + error.body.message, 'error');
+            console.error('Error saving Record:', error);
+        });
     }
 
     clearFieldSelection() {
