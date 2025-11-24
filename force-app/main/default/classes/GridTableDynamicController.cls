@@ -579,7 +579,7 @@ public without sharing class GridTableDynamicController {
             //Upsert Check
             if(isObjectUpdateable && isObjectCreatable && isObjectAccessible){
                 upsert recordsToUpdate;
-                System.debug('@@@Upserted Succesfully');
+                System.debug('@@@Upserted Succesfully'+recordsToUpdate);
                 return 'Success: record updated successfully';
             } else {
                 throw new AuraHandledException(objectApiName + ' is not updateable or creatable');
